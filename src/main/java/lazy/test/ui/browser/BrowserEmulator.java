@@ -1,6 +1,7 @@
 package lazy.test.ui.browser;
 
 import com.thoughtworks.selenium.Wait;
+import lazy.test.ui.exceptions.ElementNotFoundException;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriverService;
@@ -28,21 +29,21 @@ import java.util.List;
  */
 public class BrowserEmulator {
 
-	RemoteWebDriver browserCore;
-	WebDriverBackedSelenium browser;
-	ChromeDriverService chromeServer;
-	JavascriptExecutor javaScriptExecutor;
+    RemoteWebDriver browserCore;
+    WebDriverBackedSelenium browser;
+    ChromeDriverService chromeServer;
+    JavascriptExecutor javaScriptExecutor;
 
     String chromeDriverPath;
     String ieDriverPath;
-	
-	int stepInterval = Integer.parseInt(GlobalSettings.stepInterval);
-	int timeout = Integer.parseInt(GlobalSettings.timeout);
-    int pause = Integer.parseInt(GlobalSettings.pause);
-	
-	private static Logger logger = LoggerFactory.getLogger(BrowserEmulator.class);
 
-	public BrowserEmulator() {
+    int stepInterval = Integer.parseInt(GlobalSettings.stepInterval);
+    int timeout = Integer.parseInt(GlobalSettings.timeout);
+    int pause = Integer.parseInt(GlobalSettings.pause);
+
+    private static Logger logger = LoggerFactory.getLogger(BrowserEmulator.class);
+
+    public BrowserEmulator() {
         chromeDriverPath = GlobalSettings.chromeDriverPath;
         ieDriverPath = GlobalSettings.ieDriverPath;
 
@@ -57,113 +58,113 @@ public class BrowserEmulator {
         chromeDriverPath = this.getClass().getResource(chromeDriverPath).getPath();
         ieDriverPath = this.getClass().getResource(ieDriverPath).getPath();
 
-		setupBrowserCoreType(GlobalSettings.browserCoreType);
-		browser = new WebDriverBackedSelenium(browserCore, "http://www.163.com/");
-		javaScriptExecutor = (JavascriptExecutor) browserCore;
-		logger.info("Started BrowserEmulator");
-	}
+        setupBrowserCoreType(GlobalSettings.browserCoreType);
+        browser = new WebDriverBackedSelenium(browserCore, "http://www.163.com/");
+        javaScriptExecutor = (JavascriptExecutor) browserCore;
+        logger.info("Started BrowserEmulator");
+    }
 
-	private void setupBrowserCoreType(int type) {
-		if (type == 1) {
-			browserCore = new FirefoxDriver();
-			browserCore.manage().window().maximize();
-			logger.info("Using Firefox");
-			return;
-		}
-		if (type == 2) {
-			chromeServer = new ChromeDriverService.Builder().usingDriverExecutable(new File(chromeDriverPath)).usingAnyFreePort().build();
-			try {
-				chromeServer.start();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-			capabilities.setCapability("chrome.switches", Arrays.asList("--start-maximized"));
-			browserCore = new RemoteWebDriver(chromeServer.getUrl(), capabilities);
-			browserCore.manage().window().maximize();
-			logger.info("Using Chrome");
-			return;
-		}
-		if (type == 3) {
-			System.setProperty("webdriver.ie.driver", ieDriverPath);
-			DesiredCapabilities capabilities = DesiredCapabilities.internetExplorer();
-			capabilities.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
-			browserCore = new InternetExplorerDriver(capabilities);
-			browserCore.manage().window().maximize();
-			logger.info("Using IE");
-			return;
-		}
-		if (type == 4) {
-			browserCore = new SafariDriver();
-			browserCore.manage().window().maximize();
-			logger.info("Using Safari");
-			return;
-		}
+    private void setupBrowserCoreType(int type) {
+        if (type == 1) {
+            browserCore = new FirefoxDriver();
+            browserCore.manage().window().maximize();
+            logger.info("Using Firefox");
+            return;
+        }
+        if (type == 2) {
+            chromeServer = new ChromeDriverService.Builder().usingDriverExecutable(new File(chromeDriverPath)).usingAnyFreePort().build();
+            try {
+                chromeServer.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+            capabilities.setCapability("chrome.switches", Arrays.asList("--start-maximized"));
+            browserCore = new RemoteWebDriver(chromeServer.getUrl(), capabilities);
+            browserCore.manage().window().maximize();
+            logger.info("Using Chrome");
+            return;
+        }
+        if (type == 3) {
+            System.setProperty("webdriver.ie.driver", ieDriverPath);
+            DesiredCapabilities capabilities = DesiredCapabilities.internetExplorer();
+            capabilities.setCapability(InternetExplorerDriver.INTRODUCE_FLAKINESS_BY_IGNORING_SECURITY_DOMAINS, true);
+            browserCore = new InternetExplorerDriver(capabilities);
+            browserCore.manage().window().maximize();
+            logger.info("Using IE");
+            return;
+        }
+        if (type == 4) {
+            browserCore = new SafariDriver();
+            browserCore.manage().window().maximize();
+            logger.info("Using Safari");
+            return;
+        }
 
-		Assert.fail("Incorrect browser type");
-	}
-	
-	/**
-	 * Get the WebDriver instance embedded in BrowserEmulator
-	 * @return a WebDriver instance
-	 */
-	public RemoteWebDriver getBrowserCore() {
-		return browserCore;
-	}
+        Assert.fail("Incorrect browser type");
+    }
 
-	/**
-	 * Get the WebDriverBackedSelenium instance embedded in BrowserEmulator
-	 * @return a WebDriverBackedSelenium instance
-	 */
-	public WebDriverBackedSelenium getBrowser() {
-		return browser;
-	}
-	
-	/**
-	 * Get the JavascriptExecutor instance embedded in BrowserEmulator
-	 * @return a JavascriptExecutor instance
-	 */
-	public JavascriptExecutor getJavaScriptExecutor() {
-		return javaScriptExecutor;
-	}
+    /**
+     * Get the WebDriver instance embedded in BrowserEmulator
+     * @return a WebDriver instance
+     */
+    public RemoteWebDriver getBrowserCore() {
+        return browserCore;
+    }
 
-	/**
-	 * Open the URL
-	 * @param url
-	 *            the target URL
-	 */
-	public void open(String url) {
-		pause(pause);
-		try {
-			browser.open(url);
-		} catch (Exception e) {
-			e.printStackTrace();
-			handleFailure("Failed to open url " + url);
-		}
-		logger.info("Opened url " + url);
-	}
+    /**
+     * Get the WebDriverBackedSelenium instance embedded in BrowserEmulator
+     * @return a WebDriverBackedSelenium instance
+     */
+    public WebDriverBackedSelenium getBrowser() {
+        return browser;
+    }
 
-	/**
-	 * Quit the browser
-	 */
-	public void quit() {
+    /**
+     * Get the JavascriptExecutor instance embedded in BrowserEmulator
+     * @return a JavascriptExecutor instance
+     */
+    public JavascriptExecutor getJavaScriptExecutor() {
+        return javaScriptExecutor;
+    }
+
+    /**
+     * Open the URL
+     * @param url
+     *            the target URL
+     */
+    public void open(String url) {
         pause(pause);
-		browserCore.quit();
-		if (GlobalSettings.browserCoreType == 2) {
-			chromeServer.stop();
-		}
-		logger.info("Quitted BrowserEmulator");
-	}
+        try {
+            browser.open(url);
+        } catch (Exception e) {
+            e.printStackTrace();
+            handleFailure("Failed to open url " + url);
+        }
+        logger.info("Opened url " + url);
+    }
 
-	/**
-	 * Click the page element
-	 * @param xpath
-	 *            the element's xpath
-	 */
-	public void click(String xpath) {
-		//expectElementExistOrNot(true, xpath, timeout);
-		click(new String[] {xpath});
-	}
+    /**
+     * Quit the browser
+     */
+    public void quit() {
+        pause(pause);
+        browserCore.quit();
+        if (GlobalSettings.browserCoreType == 2) {
+            chromeServer.stop();
+        }
+        logger.info("Quitted BrowserEmulator");
+    }
+
+    /**
+     * Click the page element
+     * @param xpath
+     *            the element's xpath
+     */
+    public void click(String xpath) {
+        //expectElementExistOrNot(true, xpath, timeout);
+        click(new String[] {xpath});
+    }
 
     /**
      * Click the page element
@@ -181,11 +182,11 @@ public class BrowserEmulator {
         logger.info("Clicked [" + StringUtils.join(xpath, ",") + "]");
     }
 
-	/**
-	 * Click an element until it's clickable or timeout
-	 * @param xpathArray
-	 * @throws Exception
-	 */
+    /**
+     * Click an element until it's clickable or timeout
+     * @param xpathArray
+     * @throws Exception
+     */
     private void clickTheClickable(final String[] xpathArray) throws Exception {
         new Wait() {
             public boolean until() {
@@ -266,17 +267,17 @@ public class BrowserEmulator {
         type(new String[]{xpath},text);
     }
 
-	/**
-	 * Type text at the page element<br>
-	 * Before typing, try to clear existed text
-	 * @param xpathArray
-	 *            the element's xpath
-	 * @param text
-	 *            the input text
-	 */
-	public void type(final String[] xpathArray, final String text) {
+    /**
+     * Type text at the page element<br>
+     * Before typing, try to clear existed text
+     * @param xpathArray
+     *            the element's xpath
+     * @param text
+     *            the input text
+     */
+    public void type(final String[] xpathArray, final String text) {
         pause(pause);
-		//expectElementExistOrNot(true, xpath, timeout);
+        //expectElementExistOrNot(true, xpath, timeout);
 
         try {
             new Wait() {
@@ -305,7 +306,7 @@ public class BrowserEmulator {
             logger.info("", e);
             handleFailure(e.getMessage());
         }
-	}
+    }
 
     public void clear(String xpath) {
         clear(new String[] {xpath});
@@ -346,7 +347,7 @@ public class BrowserEmulator {
      * @param xpath
      */
     public void uncheck(String xpath) {
-       uncheck(new String[] {xpath});
+        uncheck(new String[] {xpath});
     }
 
     /**
@@ -396,31 +397,31 @@ public class BrowserEmulator {
     public void calendarInput(String xpath, String date) {
         calendarInput(new String[] {xpath}, date);
     }
-	
-	/**
-	 * Type date at the calendar control<br>
-	 * Before typing, try to clear default date
-	 * @param xpathArray
-	 *            the element's xpath
-	 * @param date
-	 *            the input date 'yyyy-MM-DD', eg:2016-02-01
-	 * 
-	 * @author wyxufengyu
-	 */
-	public void calendarInput(final String[] xpathArray, final String date) {
-		
-		//检查date是否是正确的日期格式
-		try{
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			dateFormat.parse(date);
-		}catch(Exception e){
-			logger.warn("The input date formate is wrong: " + date);
-			boolean dateFormat = false;
-			Assert.assertTrue(dateFormat,"The input date formate:" + date + " is wrong!");
-		}
+
+    /**
+     * Type date at the calendar control<br>
+     * Before typing, try to clear default date
+     * @param xpathArray
+     *            the element's xpath
+     * @param date
+     *            the input date 'yyyy-MM-DD', eg:2016-02-01
+     *
+     * @author wyxufengyu
+     */
+    public void calendarInput(final String[] xpathArray, final String date) {
+
+        //检查date是否是正确的日期格式
+        try{
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            dateFormat.parse(date);
+        }catch(Exception e){
+            logger.warn("The input date formate is wrong: " + date);
+            boolean dateFormat = false;
+            Assert.assertTrue(dateFormat,"The input date formate:" + date + " is wrong!");
+        }
 
         pause(pause);
-		//expectElementExistOrNot(true, xpath, timeout);
+        //expectElementExistOrNot(true, xpath, timeout);
 
         try {
             new Wait() {
@@ -448,8 +449,8 @@ public class BrowserEmulator {
             handleFailure(e.getMessage());
         }
 
-		logger.info("Type " + date + " at [" + StringUtils.join(xpathArray, ",") + "]");
-	}
+        logger.info("Type " + date + " at [" + StringUtils.join(xpathArray, ",") + "]");
+    }
 
     /**
      * Hover on the page element
@@ -461,13 +462,13 @@ public class BrowserEmulator {
         mouseOver(new String[] {xpath});
     }
 
-	/**
-	 * Hover on the page element
-	 * 
-	 * @param xpathArray
-	 *            the element's xpath
-	 */
-	public void mouseOver(final String[] xpathArray) {
+    /**
+     * Hover on the page element
+     *
+     * @param xpathArray
+     *            the element's xpath
+     */
+    public void mouseOver(final String[] xpathArray) {
 
         // Selenium doesn't support the Safari browser
         if (GlobalSettings.browserCoreType == 4) {
@@ -476,15 +477,15 @@ public class BrowserEmulator {
         }
 
         pause(pause);
-		//expectElementExistOrNot(true, xpath, timeout);
-		// First make mouse out of browser
-		Robot rb = null;
-		try {
-			rb = new Robot();
-		} catch (AWTException e) {
-			e.printStackTrace();
-		}
-		rb.mouseMove(0, 0);
+        //expectElementExistOrNot(true, xpath, timeout);
+        // First make mouse out of browser
+        Robot rb = null;
+        try {
+            rb = new Robot();
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
+        rb.mouseMove(0, 0);
 
         try {
             new Wait() {
@@ -536,26 +537,26 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
+    }
 
-	/**
-	 * Switch window/tab
-	 * @param windowTitle
-	 *            the window/tab's title
-	 */
-	public void selectWindow(String windowTitle) {
-		browser.selectWindow(windowTitle);
-		logger.info("Switched to window " + windowTitle);
-	}
+    /**
+     * Switch window/tab
+     * @param windowTitle
+     *            the window/tab's title
+     */
+    public void selectWindow(String windowTitle) {
+        browser.selectWindow(windowTitle);
+        logger.info("Switched to window " + windowTitle);
+    }
 
-	/**
-	 * Enter the iframe
-	 * @param xpath
-	 *            the iframe's xpath
-	 */
-	public void enterFrame(final String xpath) {
-		//browserCore.switchTo().frame(findElement(xpath));
-		//logger.info("Entered iframe " + xpath);
+    /**
+     * Enter the iframe
+     * @param xpath
+     *            the iframe's xpath
+     */
+    public void enterFrame(final String xpath) {
+        //browserCore.switchTo().frame(findElement(xpath));
+        //logger.info("Entered iframe " + xpath);
 
         try {
             new Wait() {
@@ -578,7 +579,7 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
+    }
 
     /**
      * Enter frame
@@ -608,13 +609,13 @@ public class BrowserEmulator {
         }
     }
 
-	/**
-	 * Leave the iframe
-	 */
-	public void leaveFrame() {
-		//pause(stepInterval);
-		//browserCore.switchTo().defaultContent();
-		//logger.info("Left the iframe");
+    /**
+     * Leave the iframe
+     */
+    public void leaveFrame() {
+        //pause(stepInterval);
+        //browserCore.switchTo().defaultContent();
+        //logger.info("Left the iframe");
 
         try {
             new Wait() {
@@ -637,15 +638,15 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
-	
-	/**
-	 * Refresh the browser
-	 */
-	public void refresh() {
-		//pause(stepInterval);
-		//browserCore.navigate().refresh();
-		//logger.info("Refreshed");
+    }
+
+    /**
+     * Refresh the browser
+     */
+    public void refresh() {
+        //pause(stepInterval);
+        //browserCore.navigate().refresh();
+        //logger.info("Refreshed");
 
         try {
             new Wait() {
@@ -668,16 +669,16 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
-	
-	/**
-	 * Mimic system-level keyboard event
-	 * @param keyCode
-	 *            such as KeyEvent.VK_TAB, KeyEvent.VK_F11
-	 */
-	public void pressKeyboard(final int keyCode) {
+    }
+
+    /**
+     * Mimic system-level keyboard event
+     * @param keyCode
+     *            such as KeyEvent.VK_TAB, KeyEvent.VK_F11
+     */
+    public void pressKeyboard(final int keyCode) {
         pause(pause);
-		try {
+        try {
             new Wait() {
                 public boolean until() {
                     boolean flag;
@@ -700,15 +701,15 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
+    }
 
-	/**
-	 * Mimic system-level keyboard event with String
-	 * 
-	 * @param text
-	 * 
-	 */
-	public void inputKeyboard(final String text) {
+    /**
+     * Mimic system-level keyboard event with String
+     *
+     * @param text
+     *
+     */
+    public void inputKeyboard(final String text) {
         pause(pause);
         try {
             new Wait() {
@@ -736,9 +737,9 @@ public class BrowserEmulator {
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
-	}
-	
-	//TODO Mimic system-level mouse event
+    }
+
+    //TODO Mimic system-level mouse event
 
     public boolean isTextExists(String text) {
         return isTextExists(new String[] {text});
@@ -781,31 +782,31 @@ public class BrowserEmulator {
         expectTextExistOrNot(expectExist, text, timeout);
     }
 
-	/**
-	 * Expect some text exist or not on the page<br>
-	 * Expect text exist, but not found after timeout => Assert fail<br>
-	 * Expect text not exist, but found after timeout => Assert fail
-	 * @param expectExist
-	 *            true or false
-	 * @param text
-	 *            the expected text
+    /**
+     * Expect some text exist or not on the page<br>
+     * Expect text exist, but not found after timeout => Assert fail<br>
+     * Expect text not exist, but found after timeout => Assert fail
+     * @param expectExist
+     *            true or false
+     * @param text
+     *            the expected text
      * @param timeout
      *            timeout
-	 */
-	public void expectTextExistOrNot(boolean expectExist, final String text, int timeout) {
-		if (expectExist) {
-			try {
-				new Wait() {
-					public boolean until() {
-						return isTextPresent(text);
-					}
-				}.wait("Failed to find text " + text, timeout, stepInterval);
-			} catch (Exception e) {
-				logger.info(e.getMessage(),e);
-				handleFailure("Failed to find text " + text);
-			}
-			logger.info("Found desired text " + text);
-		} else {
+     */
+    public void expectTextExistOrNot(boolean expectExist, final String text, int timeout) {
+        if (expectExist) {
+            try {
+                new Wait() {
+                    public boolean until() {
+                        return isTextPresent(text);
+                    }
+                }.wait("Failed to find text " + text, timeout, stepInterval);
+            } catch (Exception e) {
+                logger.info(e.getMessage(),e);
+                handleFailure("Failed to find text " + text);
+            }
+            logger.info("Found desired text " + text);
+        } else {
 			/*if (isTextPresent(text)) {
 				handleFailure("Found undesired text " + text);
 			} else {
@@ -823,8 +824,8 @@ public class BrowserEmulator {
                 handleFailure("Found undesired text " + text);
             }
             logger.info("Not found undesired text " + text);
-		}
-	}
+        }
+    }
 
     /**
      * Expect an element exist or not on the page<br>
@@ -842,19 +843,19 @@ public class BrowserEmulator {
         expectElementExistOrNot(expectExist, new String[] {xpath}, timeout);
     }
 
-	/**
-	 * Expect an element exist or not on the page<br>
-	 * Expect element exist, but not found after timeout => Assert fail<br>
-	 * Expect element not exist, but found after timeout => Assert fail<br>
-	 * Here <b>exist</b> means <b>visible</b>
-	 * @param expectExist
-	 *            true or false
-	 * @param xpathArray
-	 *            the expected element's xpath
-	 * @param timeout
-	 *            timeout in millisecond
-	 */
-	public void expectElementExistOrNot(boolean expectExist, final String[] xpathArray, int timeout) {
+    /**
+     * Expect an element exist or not on the page<br>
+     * Expect element exist, but not found after timeout => Assert fail<br>
+     * Expect element not exist, but found after timeout => Assert fail<br>
+     * Here <b>exist</b> means <b>visible</b>
+     * @param expectExist
+     *            true or false
+     * @param xpathArray
+     *            the expected element's xpath
+     * @param timeout
+     *            timeout in millisecond
+     */
+    public void expectElementExistOrNot(boolean expectExist, final String[] xpathArray, int timeout) {
         if (expectExist) {
             try {
                 new Wait() {
@@ -914,121 +915,121 @@ public class BrowserEmulator {
                 break;
             }*/
         }
-	}
+    }
 
-	/**
-	 * Is the text present on the page
-	 * @param text
-	 *            the expected text
-	 * @return
-	 */
-	public boolean isTextPresent(String text) {
-		//pause(time);
-		boolean isPresent = browser.isTextPresent(text);
-		if (isPresent) {
-			logger.info("Found text " + text);
-			return true;
-		} else {
-			logger.info("Not found text " + text);
-			return false;
-		}
-	}
+    /**
+     * Is the text present on the page
+     * @param text
+     *            the expected text
+     * @return
+     */
+    public boolean isTextPresent(String text) {
+        //pause(time);
+        boolean isPresent = browser.isTextPresent(text);
+        if (isPresent) {
+            logger.info("Found text " + text);
+            return true;
+        } else {
+            logger.info("Not found text " + text);
+            return false;
+        }
+    }
 
-	/**
-	 * Is the element present on the page<br>
-	 * Here <b>present</b> means <b>visible</b>
-	 * @param xpath
-	 *            the expected element's xpath
-	 * @return
-	 */
-	public boolean isElementPresent(String xpath) {
-		//pause(time);
-		boolean isPresent = browser.isElementPresent(xpath) && findElement(xpath).isDisplayed();
-		if (isPresent) {
-			logger.info("Found element " + xpath);
-			return true;
-		} else {
-			logger.info("Not found element" + xpath);
-			return false;
-		}
-	}
-	
-	/**
-	 * Pause
-	 * @param time in millisecond
-	 */
-	public void pause(int time) {
-		if (time <= 0) {
-			return;
-		}
-		try {
-			Thread.sleep(time);
-			logger.info("Pause " + time + " ms");
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	private void handleFailure(String notice) {
-		String png = LogTools.screenShot(this);
-		String log = notice + " >> capture screenshot at " + png;
-		logger.error(log);
-		if (GlobalSettings.baseStorageUrl.lastIndexOf("/") == GlobalSettings.baseStorageUrl.length()) {
-			GlobalSettings.baseStorageUrl = GlobalSettings.baseStorageUrl.substring(0, GlobalSettings.baseStorageUrl.length() - 1);
-		}
-		Reporter.log(log + "<br/><img src=\"" + GlobalSettings.baseStorageUrl + "/" + png + "\" />");
-		Assert.fail(log);
-	}
-	
-	/**
-	 * Return text from specified web element.
-	 * @param xpath
-	 * @return
-	 */
-	public String getText(String xpath) {
-		WebElement element = findElement(xpath);
-		return element.getAttribute("value");
-	}
-	
-	
-	/** 从一个table的单元格中得到文本值, 行列从1开始. 
-    @param xpath  用于得到table对象 
-    @param row,col 为了使用者便于
-    @return 从一个table的单元格中得到文本值
-    @author wyxufengyu
-    */  
+    /**
+     * Is the element present on the page<br>
+     * Here <b>present</b> means <b>visible</b>
+     * @param xpath
+     *            the expected element's xpath
+     * @return
+     */
+    public boolean isElementPresent(String xpath) {
+        //pause(time);
+        boolean isPresent = browser.isElementPresent(xpath) && findElement(xpath).isDisplayed();
+        if (isPresent) {
+            logger.info("Found element " + xpath);
+            return true;
+        } else {
+            logger.info("Not found element" + xpath);
+            return false;
+        }
+    }
+
+    /**
+     * Pause
+     * @param time in millisecond
+     */
+    public void pause(int time) {
+        if (time <= 0) {
+            return;
+        }
+        try {
+            Thread.sleep(time);
+            logger.info("Pause " + time + " ms");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void handleFailure(String notice) {
+        String png = LogTools.screenShot(this);
+        String log = notice + " >> capture screenshot at " + png;
+        logger.error(log);
+        if (GlobalSettings.baseStorageUrl.lastIndexOf("/") == GlobalSettings.baseStorageUrl.length()) {
+            GlobalSettings.baseStorageUrl = GlobalSettings.baseStorageUrl.substring(0, GlobalSettings.baseStorageUrl.length() - 1);
+        }
+        Reporter.log(log + "<br/><img src=\"" + GlobalSettings.baseStorageUrl + "/" + png + "\" />");
+        Assert.fail(log);
+    }
+
+    /**
+     * Return text from specified web element.
+     * @param xpath
+     * @return
+     */
+    public String getText(String xpath) {
+        WebElement element = findElement(xpath);
+        return element.getAttribute("value");
+    }
+
+
+    /** 从一个table的单元格中得到文本值, 行列从1开始. 
+     @param xpath  用于得到table对象 
+     @param row,col 为了使用者便于
+     @return 从一个table的单元格中得到文本值
+     @author wyxufengyu
+     */
     public String getTableCellText(String xpath,int row, int col) {
-    	
-    	//判断入参
-    	Assert.assertTrue((row>0&&col>0), "The input row and col is wrong!");
-    	
-    	//处理行列
-    	int realRow = row -1;
-    	int realCol = col -1;
-    	
+
+        //判断入参
+        Assert.assertTrue((row>0&&col>0), "The input row and col is wrong!");
+
+        //处理行列
+        int realRow = row -1;
+        int realCol = col -1;
+
         //得到table元素对象  
-        WebElement table = browserCore.findElement(By.xpath(xpath));  
+        WebElement table = browserCore.findElement(By.xpath(xpath));
 
         //得到table表中所有行对象，并得到所要查询的行对象。  
-        pause(1000);
+//        pause(1000);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
-        pause(1000);
+//        pause(1000);
         WebElement theRow = rows.get(realRow);
-         
-         
-         List<WebElement> cells;  
-         WebElement target = null;
-         
-         //列里面有"<th>"、"<td>"两种标签，所以分开处理。  
-         if(theRow.findElements(By.tagName("th")).size()>0){  
-            cells = theRow.findElements(By.tagName("th"));  
-            target = cells.get(realCol);  
-         }  
-         if(theRow.findElements(By.tagName("td")).size()>0){  
-            cells = theRow.findElements(By.tagName("td"));  
-            target = cells.get(realCol);  
-         }  
-        return target.getText();  
+
+
+        List<WebElement> cells;
+        WebElement target = null;
+
+        //列里面有"<th>"、"<td>"两种标签，所以分开处理。  
+        if(theRow.findElements(By.tagName("th")).size()>0){
+            cells = theRow.findElements(By.tagName("th"));
+            target = cells.get(realCol);
+        }
+        if(theRow.findElements(By.tagName("td")).size()>0){
+            cells = theRow.findElements(By.tagName("td"));
+            target = cells.get(realCol);
+        }
+        return target.getText();
     }
 
 
@@ -1043,7 +1044,7 @@ public class BrowserEmulator {
         WebElement table = browserCore.findElement(By.xpath(xpath));
 
         //得到table表中所有行对象，并得到所要查询的行对象。
-        pause(1000);
+//        pause(1000);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
         List<List<String>> tableDataList = new ArrayList<List<String>>();
 
@@ -1059,14 +1060,14 @@ public class BrowserEmulator {
     }
 
     /**
-	 * Select an option by visible text from &lt;select&gt; web element.
-	 * @param xpath
-	 * @param option
-	 * @throws Exception 
-	 */
-	public void select(String xpath, String option) {
-		select(new String[] {xpath}, option);
-	}
+     * Select an option by visible text from &lt;select&gt; web element.
+     * @param xpath
+     * @param option
+     * @throws Exception
+     */
+    public void select(String xpath, String option) {
+        select(new String[] {xpath}, option);
+    }
 
     /**
      * Select an option by visible text from &lt;select&gt; web element.
@@ -1432,11 +1433,28 @@ public class BrowserEmulator {
 
 
     public void clickAlert(){
-		Alert confirm = browserCore.switchTo().alert();
-		confirm.accept();
-	}
+        Alert confirm = browserCore.switchTo().alert();
+        confirm.accept();
+    }
 
     private WebElement findElement(String xpath) {
+        return this.getBrowserCore().findElement(By.xpath(xpath));
+    }
+
+    public WebElement findElementByXpath(final String xpath) {
+        try {
+            new Wait() {
+                public boolean until() {
+                    return isElementPresent(xpath);
+                }
+            }.wait("Failed to find element [" + xpath+ "]", Integer.parseInt(GlobalSettings.timeout), Integer.parseInt(GlobalSettings.stepInterval));
+
+            logger.info("Found desired element [" + xpath+ "]");
+        } catch (Exception e) {
+            logger.info(e.getMessage(), e);
+            throw new ElementNotFoundException(e.getMessage());
+        }
+
         return this.getBrowserCore().findElement(By.xpath(xpath));
     }
 }
