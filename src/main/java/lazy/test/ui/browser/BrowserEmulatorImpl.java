@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * BrowserEmulator is based on Selenium2 and adds some enhancements
  */
-public class BrowserEmulator {
+public class BrowserEmulatorImpl implements BrowseEmulator {
 
     RemoteWebDriver browserCore;
     WebDriverBackedSelenium browser;
@@ -41,9 +41,9 @@ public class BrowserEmulator {
     int timeout = Integer.parseInt(GlobalSettings.timeout);
     int pause = Integer.parseInt(GlobalSettings.pause);
 
-    private static Logger logger = LoggerFactory.getLogger(BrowserEmulator.class);
+    private static Logger logger = LoggerFactory.getLogger(BrowserEmulatorImpl.class);
 
-    public BrowserEmulator() {
+    public BrowserEmulatorImpl() {
         chromeDriverPath = GlobalSettings.chromeDriverPath;
         ieDriverPath = GlobalSettings.ieDriverPath;
 
@@ -104,36 +104,35 @@ public class BrowserEmulator {
         Assert.fail("Incorrect browser type");
     }
 
-    /**
-     * Get the WebDriver instance embedded in BrowserEmulator
-     * @return a WebDriver instance
-     */
-    public RemoteWebDriver getBrowserCore() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getBrowserCore()
+	 */
+    @Override
+	public RemoteWebDriver getBrowserCore() {
         return browserCore;
     }
 
-    /**
-     * Get the WebDriverBackedSelenium instance embedded in BrowserEmulator
-     * @return a WebDriverBackedSelenium instance
-     */
-    public WebDriverBackedSelenium getBrowser() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getBrowser()
+	 */
+    @Override
+	public WebDriverBackedSelenium getBrowser() {
         return browser;
     }
 
-    /**
-     * Get the JavascriptExecutor instance embedded in BrowserEmulator
-     * @return a JavascriptExecutor instance
-     */
-    public JavascriptExecutor getJavaScriptExecutor() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getJavaScriptExecutor()
+	 */
+    @Override
+	public JavascriptExecutor getJavaScriptExecutor() {
         return javaScriptExecutor;
     }
 
-    /**
-     * Open the URL
-     * @param url
-     *            the target URL
-     */
-    public void open(String url) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#open(java.lang.String)
+	 */
+    @Override
+	public void open(String url) {
         pause(pause);
         try {
             browser.open(url);
@@ -144,10 +143,11 @@ public class BrowserEmulator {
         logger.info("Opened url " + url);
     }
 
-    /**
-     * Quit the browser
-     */
-    public void quit() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#quit()
+	 */
+    @Override
+	public void quit() {
         pause(pause);
         browserCore.quit();
         if (GlobalSettings.browserCoreType == 2) {
@@ -156,22 +156,20 @@ public class BrowserEmulator {
         logger.info("Quitted BrowserEmulator");
     }
 
-    /**
-     * Click the page element
-     * @param xpath
-     *            the element's xpath
-     */
-    public void click(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#click(java.lang.String)
+	 */
+    @Override
+	public void click(String xpath) {
         //expectElementExistOrNot(true, xpath, timeout);
         click(new String[] {xpath});
     }
 
-    /**
-     * Click the page element
-     * @param xpath
-     *            the element's xpath
-     */
-    public void click(String[] xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#click(java.lang.String[])
+	 */
+    @Override
+	public void click(String[] xpath) {
         pause(pause);
         //expectElementExistOrNot(true, xpath, timeout);
         try {
@@ -208,19 +206,19 @@ public class BrowserEmulator {
         }.wait("Timeout when click [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
     }
 
-    /**
-     * Check an element (radio, checkbox)
-     * @param xpath
-     */
-    public void check(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#check(java.lang.String)
+	 */
+    @Override
+	public void check(String xpath) {
         check(new String[] {xpath});
     }
 
-    /**
-     * Check an element (radio, checkbox)
-     * @param xpathArray
-     */
-    public void check(final String[] xpathArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#check(java.lang.String[])
+	 */
+    @Override
+	public void check(final String[] xpathArray) {
         pause(pause);
 
         try {
@@ -250,32 +248,28 @@ public class BrowserEmulator {
         }
     }
 
-    public boolean isChecked(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#isChecked(java.lang.String)
+	 */
+    @Override
+	public boolean isChecked(String xpath) {
         WebElement element = findElement(xpath);
         return Boolean.parseBoolean(element.getAttribute("checked"));
     }
 
-    /**
-     * Type text at the page element<br>
-     * Before typing, try to clear existed text
-     * @param xpath
-     *            the element's xpath
-     * @param text
-     *            the input text
-     */
-    public void type(String xpath, String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#type(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void type(String xpath, String text) {
         type(new String[]{xpath},text);
     }
 
-    /**
-     * Type text at the page element<br>
-     * Before typing, try to clear existed text
-     * @param xpathArray
-     *            the element's xpath
-     * @param text
-     *            the input text
-     */
-    public void type(final String[] xpathArray, final String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#type(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void type(final String[] xpathArray, final String text) {
         pause(pause);
         //expectElementExistOrNot(true, xpath, timeout);
 
@@ -308,11 +302,19 @@ public class BrowserEmulator {
         }
     }
 
-    public void clear(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#clear(java.lang.String)
+	 */
+    @Override
+	public void clear(String xpath) {
         clear(new String[] {xpath});
     }
 
-    public void clear(final String[] xpathArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#clear(java.lang.String[])
+	 */
+    @Override
+	public void clear(final String[] xpathArray) {
         pause(pause);
 
         try {
@@ -342,19 +344,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Uncheck an element (radio, checkbox)
-     * @param xpath
-     */
-    public void uncheck(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#uncheck(java.lang.String)
+	 */
+    @Override
+	public void uncheck(String xpath) {
         uncheck(new String[] {xpath});
     }
 
-    /**
-     * Uncheck an element (radio, checkbox)
-     * @param xpathArray
-     */
-    public void uncheck(final String[] xpathArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#uncheck(java.lang.String[])
+	 */
+    @Override
+	public void uncheck(final String[] xpathArray) {
         pause(pause);
 
         try {
@@ -384,31 +386,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Type date at the calendar control<br>
-     * Before typing, try to clear default date
-     * @param xpath
-     *            the element's xpath
-     * @param date
-     *            the input date 'yyyy-MM-DD', eg:2016-02-01
-     *
-     * @author wyxufengyu
-     */
-    public void calendarInput(String xpath, String date) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#calendarInput(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void calendarInput(String xpath, String date) {
         calendarInput(new String[] {xpath}, date);
     }
 
-    /**
-     * Type date at the calendar control<br>
-     * Before typing, try to clear default date
-     * @param xpathArray
-     *            the element's xpath
-     * @param date
-     *            the input date 'yyyy-MM-DD', eg:2016-02-01
-     *
-     * @author wyxufengyu
-     */
-    public void calendarInput(final String[] xpathArray, final String date) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#calendarInput(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void calendarInput(final String[] xpathArray, final String date) {
 
         //检查date是否是正确的日期格式
         try{
@@ -452,23 +442,19 @@ public class BrowserEmulator {
         logger.info("Type " + date + " at [" + StringUtils.join(xpathArray, ",") + "]");
     }
 
-    /**
-     * Hover on the page element
-     *
-     * @param xpath
-     *            the element's xpath
-     */
-    public void mouseOver(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#mouseOver(java.lang.String)
+	 */
+    @Override
+	public void mouseOver(String xpath) {
         mouseOver(new String[] {xpath});
     }
 
-    /**
-     * Hover on the page element
-     *
-     * @param xpathArray
-     *            the element's xpath
-     */
-    public void mouseOver(final String[] xpathArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#mouseOver(java.lang.String[])
+	 */
+    @Override
+	public void mouseOver(final String[] xpathArray) {
 
         // Selenium doesn't support the Safari browser
         if (GlobalSettings.browserCoreType == 4) {
@@ -539,22 +525,20 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Switch window/tab
-     * @param windowTitle
-     *            the window/tab's title
-     */
-    public void selectWindow(String windowTitle) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#selectWindow(java.lang.String)
+	 */
+    @Override
+	public void selectWindow(String windowTitle) {
         browser.selectWindow(windowTitle);
         logger.info("Switched to window " + windowTitle);
     }
 
-    /**
-     * Enter the iframe
-     * @param xpath
-     *            the iframe's xpath
-     */
-    public void enterFrame(final String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#enterFrame(java.lang.String)
+	 */
+    @Override
+	public void enterFrame(final String xpath) {
         //browserCore.switchTo().frame(findElement(xpath));
         //logger.info("Entered iframe " + xpath);
 
@@ -581,11 +565,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Enter frame
-     * @param nameOrId frame's name or id
-     */
-    public void enterFrameByNameOrId(final String nameOrId) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#enterFrameByNameOrId(java.lang.String)
+	 */
+    @Override
+	public void enterFrameByNameOrId(final String nameOrId) {
         try {
             new Wait() {
                 public boolean until() {
@@ -609,10 +593,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Leave the iframe
-     */
-    public void leaveFrame() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#leaveFrame()
+	 */
+    @Override
+	public void leaveFrame() {
         //pause(stepInterval);
         //browserCore.switchTo().defaultContent();
         //logger.info("Left the iframe");
@@ -640,10 +625,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Refresh the browser
-     */
-    public void refresh() {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#refresh()
+	 */
+    @Override
+	public void refresh() {
         //pause(stepInterval);
         //browserCore.navigate().refresh();
         //logger.info("Refreshed");
@@ -671,12 +657,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Mimic system-level keyboard event
-     * @param keyCode
-     *            such as KeyEvent.VK_TAB, KeyEvent.VK_F11
-     */
-    public void pressKeyboard(final int keyCode) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#pressKeyboard(int)
+	 */
+    @Override
+	public void pressKeyboard(final int keyCode) {
         pause(pause);
         try {
             new Wait() {
@@ -703,13 +688,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Mimic system-level keyboard event with String
-     *
-     * @param text
-     *
-     */
-    public void inputKeyboard(final String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#inputKeyboard(java.lang.String)
+	 */
+    @Override
+	public void inputKeyboard(final String text) {
         pause(pause);
         try {
             new Wait() {
@@ -741,11 +724,19 @@ public class BrowserEmulator {
 
     //TODO Mimic system-level mouse event
 
-    public boolean isTextExists(String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#isTextExists(java.lang.String)
+	 */
+    @Override
+	public boolean isTextExists(String text) {
         return isTextExists(new String[] {text});
     }
 
-    public boolean isTextExists(final String[] textArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#isTextExists(java.lang.String[])
+	 */
+    @Override
+	public boolean isTextExists(final String[] textArray) {
         try {
             new Wait() {
                 public boolean until() {
@@ -769,31 +760,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Expect some text exist or not on the page<br>
-     * Expect text exist, but not found after timeout => Assert fail<br>
-     * Expect text not exist, but found after timeout => Assert fail
-     * @param expectExist
-     *            true or false
-     * @param text
-     *            the expected text
-     */
-    public void expectTextExistOrNot(boolean expectExist, String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#expectTextExistOrNot(boolean, java.lang.String)
+	 */
+    @Override
+	public void expectTextExistOrNot(boolean expectExist, String text) {
         expectTextExistOrNot(expectExist, text, timeout);
     }
 
-    /**
-     * Expect some text exist or not on the page<br>
-     * Expect text exist, but not found after timeout => Assert fail<br>
-     * Expect text not exist, but found after timeout => Assert fail
-     * @param expectExist
-     *            true or false
-     * @param text
-     *            the expected text
-     * @param timeout
-     *            timeout
-     */
-    public void expectTextExistOrNot(boolean expectExist, final String text, int timeout) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#expectTextExistOrNot(boolean, java.lang.String, int)
+	 */
+    @Override
+	public void expectTextExistOrNot(boolean expectExist, final String text, int timeout) {
         if (expectExist) {
             try {
                 new Wait() {
@@ -827,35 +806,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Expect an element exist or not on the page<br>
-     * Expect element exist, but not found after timeout => Assert fail<br>
-     * Expect element not exist, but found after timeout => Assert fail<br>
-     * Here <b>exist</b> means <b>visible</b>
-     * @param expectExist
-     *            true or false
-     * @param xpath
-     *            the expected element's xpath
-     * @param timeout
-     *            timeout in millisecond
-     */
-    public void expectElementExistOrNot(boolean expectExist, String xpath, int timeout) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#expectElementExistOrNot(boolean, java.lang.String, int)
+	 */
+    @Override
+	public void expectElementExistOrNot(boolean expectExist, String xpath, int timeout) {
         expectElementExistOrNot(expectExist, new String[] {xpath}, timeout);
     }
 
-    /**
-     * Expect an element exist or not on the page<br>
-     * Expect element exist, but not found after timeout => Assert fail<br>
-     * Expect element not exist, but found after timeout => Assert fail<br>
-     * Here <b>exist</b> means <b>visible</b>
-     * @param expectExist
-     *            true or false
-     * @param xpathArray
-     *            the expected element's xpath
-     * @param timeout
-     *            timeout in millisecond
-     */
-    public void expectElementExistOrNot(boolean expectExist, final String[] xpathArray, int timeout) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#expectElementExistOrNot(boolean, java.lang.String[], int)
+	 */
+    @Override
+	public void expectElementExistOrNot(boolean expectExist, final String[] xpathArray, int timeout) {
         if (expectExist) {
             try {
                 new Wait() {
@@ -917,13 +880,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Is the text present on the page
-     * @param text
-     *            the expected text
-     * @return
-     */
-    public boolean isTextPresent(String text) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#isTextPresent(java.lang.String)
+	 */
+    @Override
+	public boolean isTextPresent(String text) {
         //pause(time);
         boolean isPresent = browser.isTextPresent(text);
         if (isPresent) {
@@ -935,14 +896,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Is the element present on the page<br>
-     * Here <b>present</b> means <b>visible</b>
-     * @param xpath
-     *            the expected element's xpath
-     * @return
-     */
-    public boolean isElementPresent(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#isElementPresent(java.lang.String)
+	 */
+    @Override
+	public boolean isElementPresent(String xpath) {
         //pause(time);
         boolean isPresent = browser.isElementPresent(xpath) && findElement(xpath).isDisplayed();
         if (isPresent) {
@@ -954,11 +912,11 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Pause
-     * @param time in millisecond
-     */
-    public void pause(int time) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#pause(int)
+	 */
+    @Override
+	public void pause(int time) {
         if (time <= 0) {
             return;
         }
@@ -981,24 +939,21 @@ public class BrowserEmulator {
         Assert.fail(log);
     }
 
-    /**
-     * Return text from specified web element.
-     * @param xpath
-     * @return
-     */
-    public String getText(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getText(java.lang.String)
+	 */
+    @Override
+	public String getText(String xpath) {
         WebElement element = findElement(xpath);
         return element.getAttribute("value");
     }
 
 
-    /** 从一个table的单元格中得到文本值, 行列从1开始.
-     @param xpath  用于得到table对象
-     @param row,col 为了使用者便于
-     @return 从一个table的单元格中得到文本值
-     @author wyxufengyu
-     */
-    public String getTableCellText(String xpath,int row, int col) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getTableCellText(java.lang.String, int, int)
+	 */
+    @Override
+	public String getTableCellText(String xpath,int row, int col) {
 
         //判断入参
         Assert.assertTrue((row>0&&col>0), "The input row and col is wrong!");
@@ -1033,12 +988,11 @@ public class BrowserEmulator {
     }
 
 
-    /** 从一个table的单元格中得到文本值
-     @param xpath  用于得到table对象
-     @return 从一个table的单元格中得到文本值
-     @author wyxufengyu
-     */
-    public List<List<String>> getTableList(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getTableList(java.lang.String)
+	 */
+    @Override
+	public List<List<String>> getTableList(String xpath) {
 
         //得到table元素对象
         WebElement table = findElementByXpath(xpath);
@@ -1059,23 +1013,19 @@ public class BrowserEmulator {
         return tableDataList;
     }
 
-    /**
-     * Select an option by visible text from &lt;select&gt; web element.
-     * @param xpath
-     * @param option
-     * @throws Exception
-     */
-    public void select(String xpath, String option) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#select(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void select(String xpath, String option) {
         select(new String[] {xpath}, option);
     }
 
-    /**
-     * Select an option by visible text from &lt;select&gt; web element.
-     * @param xpathArray
-     * @param option
-     * @throws Exception
-     */
-    public void select(final String[] xpathArray, final String option) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#select(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void select(final String[] xpathArray, final String option) {
         pause(pause);
 
         try {
@@ -1105,23 +1055,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Select an option by index from &lt;select&gt; web element.
-     * @param xpath
-     * @param index
-     * @throws Exception
-     */
-    public void selectByIndex(String xpath, int index) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#selectByIndex(java.lang.String, int)
+	 */
+    @Override
+	public void selectByIndex(String xpath, int index) {
         selectByIndex(new String[]{xpath}, index);
     }
 
-    /**
-     * Select an option by index from &lt;select&gt; web element.
-     * @param xpathArray
-     * @param index
-     * @throws Exception
-     */
-    public void selectByIndex(final String[] xpathArray, final int index) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#selectByIndex(java.lang.String[], int)
+	 */
+    @Override
+	public void selectByIndex(final String[] xpathArray, final int index) {
         pause(pause);
 
         try {
@@ -1151,23 +1097,19 @@ public class BrowserEmulator {
         }
     }
 
-    /**
-     * Select an option by value from &lt;select&gt; web element.
-     * @param xpath
-     * @param value
-     * @throws Exception
-     */
-    public void selectByValue(String xpath, String value) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#selectByValue(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void selectByValue(String xpath, String value) {
         selectByValue(new String[]{xpath}, value);
     }
 
-    /**
-     * Select an option by value from &lt;select&gt; web element.
-     * @param xpathArray
-     * @param value
-     * @throws Exception
-     */
-    public void selectByValue(final String[] xpathArray, final String value) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#selectByValue(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void selectByValue(final String[] xpathArray, final String value) {
         pause(pause);
 
         try {
@@ -1197,11 +1139,19 @@ public class BrowserEmulator {
         }
     }
 
-    public void deSelect(String xpath, String option) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelect(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void deSelect(String xpath, String option) {
         deSelect(new String[]{xpath}, option);
     }
 
-    public void deSelect(final String[] xpathArray, final String option) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelect(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void deSelect(final String[] xpathArray, final String option) {
         pause(pause);
 
         try {
@@ -1231,11 +1181,19 @@ public class BrowserEmulator {
         }
     }
 
-    public void deSelectByIndex(String xpath, int index) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelectByIndex(java.lang.String, int)
+	 */
+    @Override
+	public void deSelectByIndex(String xpath, int index) {
         deSelectByIndex(new String[]{xpath}, index);
     }
 
-    public void deSelectByIndex(final String[] xpathArray, final int index) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelectByIndex(java.lang.String[], int)
+	 */
+    @Override
+	public void deSelectByIndex(final String[] xpathArray, final int index) {
         pause(pause);
 
         try {
@@ -1265,11 +1223,19 @@ public class BrowserEmulator {
         }
     }
 
-    public void deSelectByValue(String xpath, String value) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelectByValue(java.lang.String, java.lang.String)
+	 */
+    @Override
+	public void deSelectByValue(String xpath, String value) {
         deSelectByValue(new String[]{xpath}, value);
     }
 
-    public void deSelectByValue(final String[] xpathArray, final String value) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#deSelectByValue(java.lang.String[], java.lang.String)
+	 */
+    @Override
+	public void deSelectByValue(final String[] xpathArray, final String value) {
         pause(pause);
 
         try {
@@ -1299,11 +1265,19 @@ public class BrowserEmulator {
         }
     }
 
-    public void clearSelection(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#clearSelection(java.lang.String)
+	 */
+    @Override
+	public void clearSelection(String xpath) {
         clearSelection(new String[]{xpath});
     }
 
-    public void clearSelection(final String[] xpathArray) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#clearSelection(java.lang.String[])
+	 */
+    @Override
+	public void clearSelection(final String[] xpathArray) {
         pause(pause);
 
         try {
@@ -1338,7 +1312,11 @@ public class BrowserEmulator {
         }
     }
 
-    public List<Map<String, String>> getAllOptions(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getAllOptions(java.lang.String)
+	 */
+    @Override
+	public List<Map<String, String>> getAllOptions(String xpath) {
         WebElement element = findElement(xpath);
         Select select = new Select(element);
 
@@ -1358,7 +1336,11 @@ public class BrowserEmulator {
         return optionsText;
     }
 
-    public List<Map<String, String>> getAllSelectedOptions(String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#getAllSelectedOptions(java.lang.String)
+	 */
+    @Override
+	public List<Map<String, String>> getAllSelectedOptions(String xpath) {
         WebElement element = findElement(xpath);
         Select select = new Select(element);
 
@@ -1378,15 +1360,11 @@ public class BrowserEmulator {
         return optionsText;
     }
 
-    /**
-     *
-     * @Title: uploadFile
-     * @Description: 文件上传,注意filePath必须是绝对路径
-     * @param : filePath 文件路径
-     * @param : xpathArray  控件的xpath
-     * @return: void
-     */
-    public void uploadFile(final String filePath, final String[] xpathArray){
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#uploadFile(java.lang.String, java.lang.String[])
+	 */
+    @Override
+	public void uploadFile(final String filePath, final String[] xpathArray){
         new Thread(new Runnable() {
             public void run() {
                 String exePath = this.getClass().getResource("/").toString().substring(6)+"software/upLoad.exe";
@@ -1432,7 +1410,11 @@ public class BrowserEmulator {
     }
 
 
-    public void clickAlert(){
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#clickAlert()
+	 */
+    @Override
+	public void clickAlert(){
         Alert confirm = browserCore.switchTo().alert();
         confirm.accept();
     }
@@ -1441,7 +1423,11 @@ public class BrowserEmulator {
         return this.getBrowserCore().findElement(By.xpath(xpath));
     }
 
-    public WebElement findElementByXpath(final String xpath) {
+    /* (non-Javadoc)
+	 * @see lazy.test.ui.browser.BrowseEmulator#findElementByXpath(java.lang.String)
+	 */
+    @Override
+	public WebElement findElementByXpath(final String xpath) {
         try {
             new Wait() {
                 public boolean until() {
@@ -1457,4 +1443,9 @@ public class BrowserEmulator {
 
         return this.getBrowserCore().findElement(By.xpath(xpath));
     }
+
+	@Override
+	public String getCurrentUrl() {
+		return browser.getWrappedDriver().getCurrentUrl();
+	}
 }

@@ -22,7 +22,7 @@ public class LogTools {
         logger.info(logText);
 	}
 
-	public static String screenShot(BrowserEmulator be) {
+	public static String screenShot(BrowseEmulator be) {
 		String dir = "screenshot"; // TODO
 		String time = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
 		String screenShotPath = dir + File.separator + time + ".png";

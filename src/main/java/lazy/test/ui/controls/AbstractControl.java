@@ -1,6 +1,6 @@
 package lazy.test.ui.controls;
 
-import lazy.test.ui.browser.BrowserEmulator;
+import lazy.test.ui.browser.BrowseEmulator;
 import lazy.test.ui.browser.GlobalSettings;
 import lazy.test.ui.exceptions.ElementNotFoundException;
 
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractControl {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    protected BrowserEmulator be;
+    protected BrowseEmulator be;
 
     private String[] xpath;
 
