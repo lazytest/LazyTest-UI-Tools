@@ -992,8 +992,8 @@ public class BrowserEmulator {
     }
 
 
-    /** 从一个table的单元格中得到文本值, 行列从1开始. 
-     @param xpath  用于得到table对象 
+    /** 从一个table的单元格中得到文本值, 行列从1开始.
+     @param xpath  用于得到table对象
      @param row,col 为了使用者便于
      @return 从一个table的单元格中得到文本值
      @author wyxufengyu
@@ -1008,7 +1008,7 @@ public class BrowserEmulator {
         int realCol = col -1;
 
         //得到table元素对象  
-        WebElement table = browserCore.findElement(By.xpath(xpath));
+        WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。  
 //        pause(1000);
@@ -1020,7 +1020,7 @@ public class BrowserEmulator {
         List<WebElement> cells;
         WebElement target = null;
 
-        //列里面有"<th>"、"<td>"两种标签，所以分开处理。  
+        //列里面有"<th>"、"<td>"两种标签，所以分开处理。
         if(theRow.findElements(By.tagName("th")).size()>0){
             cells = theRow.findElements(By.tagName("th"));
             target = cells.get(realCol);
@@ -1041,7 +1041,7 @@ public class BrowserEmulator {
     public List<List<String>> getTableList(String xpath) {
 
         //得到table元素对象
-        WebElement table = browserCore.findElement(By.xpath(xpath));
+        WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。
 //        pause(1000);
