@@ -409,6 +409,13 @@ public interface BrowserEmulator {
 	 @param row,col 为了使用者便于
 	 @return 从一个table的单元格中得到文本值
 	 */
+	String getTableCellText(String xpath, int row, int col, int waitTime);
+	
+	/** 从一个table的单元格中得到文本值, 行列从1开始.
+	 @param xpath  用于得到table对象
+	 @param row,col 为了使用者便于
+	 @return 从一个table的单元格中得到文本值
+	 */
 	String getTableCellText(String xpath, int row, int col);
 
 	/** 从一个table的单元格中得到文本值
@@ -416,6 +423,11 @@ public interface BrowserEmulator {
 	 @return 从一个table的单元格中得到文本值
 	 */
 	List<List<String>> getTableList(String xpath);
+	/** 从一个table的单元格中得到文本值
+	 @param xpath  用于得到table对象
+	 @return 从一个table的单元格中得到文本值
+	 */
+	List<List<String>> getTableList(String xpath , int waitTime);
 
 	/**
 	 * Select an option by visible text from &lt;select&gt; web element.

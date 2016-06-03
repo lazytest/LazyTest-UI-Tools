@@ -948,12 +948,14 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         return element.getAttribute("value");
     }
 
-
+    public String getTableCellText(String xpath, int row, int col){
+    	return getTableCellText(xpath,row, col,  0);
+    }
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#getTableCellText(java.lang.String, int, int)
 	 */
     @Override
-	public String getTableCellText(String xpath,int row, int col) {
+	public String getTableCellText(String xpath,int row, int col, int waitTime) {
 
         //判断入参
         Assert.assertTrue((row>0&&col>0), "The input row and col is wrong!");
@@ -966,9 +968,8 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。  
-//        pause(1000);
+        pause(waitTime);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
-//        pause(1000);
         WebElement theRow = rows.get(realRow);
 
 
@@ -986,19 +987,22 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         }
         return target.getText();
     }
-
+    
+    public List<List<String>> getTableList(String xpath ) {
+    	return getTableList(xpath , 0);
+    }
 
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#getTableList(java.lang.String)
 	 */
     @Override
-	public List<List<String>> getTableList(String xpath) {
+	public List<List<String>> getTableList(String xpath , int waitTime) {
 
         //得到table元素对象
         WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。
-//        pause(1000);
+        pause(waitTime);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
         List<List<String>> tableDataList = new ArrayList<List<String>>();
 
