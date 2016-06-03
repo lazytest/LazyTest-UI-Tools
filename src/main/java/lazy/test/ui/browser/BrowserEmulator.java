@@ -404,28 +404,35 @@ public interface BrowserEmulator {
 	 */
 	String getText(String xpath);
 
-	/** 从一个table的单元格中得到文本值, 行列从1开始.
-	 @param xpath  用于得到table对象
-	 @param row,col 为了使用者便于
-	 @return 从一个table的单元格中得到文本值
+	/** 
+	 * 从table中指定的的单元格中得到文本值, 行列从1开始.
+	 * 可设置等待时间，以便table完全加载完成
+	 * @param xpath  用于得到table对象
+	 * @param row,col 为了使用者便于
+	 * @return 单元格中的文本值
 	 */
 	String getTableCellText(String xpath, int row, int col, int waitTime);
 	
-	/** 从一个table的单元格中得到文本值, 行列从1开始.
-	 @param xpath  用于得到table对象
-	 @param row,col 为了使用者便于
-	 @return 从一个table的单元格中得到文本值
+	/** 
+	 * 从table中指定的的单元格中得到文本值, 行列从1开始.
+	 * @param xpath  用于得到table对象
+	 * @param row,col 为了使用者便于
+	 * @return 单元格中的文本值
 	 */
 	String getTableCellText(String xpath, int row, int col);
 
-	/** 从一个table的单元格中得到文本值
-	 @param xpath  用于得到table对象
-	 @return 从一个table的单元格中得到文本值
+	/** 
+	 * 得到table中所有单元格的文本值
+	 * @param xpath  用于得到table对象
+	 *@return 单元格中的文本值列表
 	 */
 	List<List<String>> getTableList(String xpath);
-	/** 从一个table的单元格中得到文本值
-	 @param xpath  用于得到table对象
-	 @return 从一个table的单元格中得到文本值
+	
+	/** 
+	 * 得到table中所有单元格的文本值
+	 * 可设置等待时间，以便table完全加载完成
+	 * @param xpath  用于得到table对象
+	 * @return 单元格中的文本值列表
 	 */
 	List<List<String>> getTableList(String xpath , int waitTime);
 

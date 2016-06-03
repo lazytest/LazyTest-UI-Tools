@@ -9,10 +9,16 @@ import java.util.List;
  */
 public interface TableContent {
 
-    public List<List<String>> getTableContents();
+    public List<List<String>> getTableContents(int waitTime);
 
+    public List<List<String>> getTableContents();
+    
+    public String getTableCellText(int row, int col, int waitTime);
+    
     public String getTableCellText(int row, int col);
 
+    public TableSize getTableSize(int waitTime);
+    
     public TableSize getTableSize();
 
 }
