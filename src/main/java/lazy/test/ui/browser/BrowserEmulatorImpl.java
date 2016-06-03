@@ -964,11 +964,11 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         int realRow = row -1;
         int realCol = col -1;
 
+        pause(waitTime);
         //得到table元素对象  
         WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。  
-        pause(waitTime);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
         WebElement theRow = rows.get(realRow);
 
@@ -997,12 +997,12 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public List<List<String>> getTableList(String xpath , int waitTime) {
+    	pause(waitTime);
 
         //得到table元素对象
         WebElement table = findElementByXpath(xpath);
 
         //得到table表中所有行对象，并得到所要查询的行对象。
-        pause(waitTime);
         List<WebElement> rows = table.findElements(By.tagName("tr"));
         List<List<String>> tableDataList = new ArrayList<List<String>>();
 
