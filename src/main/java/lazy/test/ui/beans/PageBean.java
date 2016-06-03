@@ -6,7 +6,7 @@ import lazy.test.ui.annotations.Description;
 import lazy.test.ui.annotations.Frame;
 import lazy.test.ui.annotations.TextContent;
 import lazy.test.ui.annotations.Xpath;
-import lazy.test.ui.browser.BrowseEmulator;
+import lazy.test.ui.browser.BrowserEmulator;
 import lazy.test.ui.controls.ControlType;
 
 /**
@@ -14,9 +14,9 @@ import lazy.test.ui.controls.ControlType;
  */
 public class PageBean {
 
-    protected BrowseEmulator be;
+    protected BrowserEmulator be;
 
-    public PageBean(BrowseEmulator be) {
+    public PageBean(BrowserEmulator be) {
         this.be = be;
         try {
             Field[] fields = this.getClass().getDeclaredFields();

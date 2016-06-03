@@ -5,7 +5,6 @@ import java.util.Properties;
 
 /**
  * Global Settings
- * @author ChenKan
  * 需要修改默认值
  */
 public class GlobalSettings {

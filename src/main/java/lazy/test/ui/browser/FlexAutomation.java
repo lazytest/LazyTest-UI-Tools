@@ -11,7 +11,7 @@ import org.testng.Assert;
  */
 public class FlexAutomation {
 
-	BrowseEmulator be;
+	BrowserEmulator be;
 	JavascriptExecutor js;
 	String flashObjId;
 	int stepInterval = Integer.parseInt(GlobalSettings.stepInterval);
@@ -23,7 +23,7 @@ public class FlexAutomation {
 	 * @param flashObjIdInHTML
 	 *            id of target flash object in HTML
 	 */
-	public FlexAutomation(BrowseEmulator wrapper, String flashObjIdInHTML) {
+	public FlexAutomation(BrowserEmulator wrapper, String flashObjIdInHTML) {
 		be = wrapper;
 		js = (JavascriptExecutor) be.getBrowserCore();
 		flashObjId = flashObjIdInHTML;

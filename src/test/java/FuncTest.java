@@ -1,6 +1,7 @@
 import junit.framework.Assert;
 import lazy.test.ui.beans.TableSize;
 import lazy.test.ui.browser.BrowserEmulator;
+import lazy.test.ui.browser.BrowserEmulatorImpl;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -14,7 +15,7 @@ public class FuncTest {
 
     @BeforeClass
     public void setUp() {
-        be = new BrowserEmulator();
+        be = new BrowserEmulatorImpl();
     }
 
     @AfterClass(alwaysRun=true)

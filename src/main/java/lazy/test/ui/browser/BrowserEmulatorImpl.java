@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * BrowserEmulator is based on Selenium2 and adds some enhancements
  */
-public class BrowserEmulatorImpl implements BrowseEmulator {
+public class BrowserEmulatorImpl implements BrowserEmulator {
 
     RemoteWebDriver browserCore;
     WebDriverBackedSelenium browser;

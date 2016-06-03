@@ -14,7 +14,6 @@ import java.io.IOException;
 
 /**
  * ImageProcess contains APIs for screen shot and image process
- * @author LingFei
  */
 public class ImageProcess {
 	

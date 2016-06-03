@@ -1,5 +1,7 @@
 package lazy.test.ui.browser;
-
+/**
+ * Created by yangyang on 2016/6/3.
+ */
 import java.util.List;
 import java.util.Map;
 
@@ -8,7 +10,7 @@ import org.openqa.selenium.WebDriverBackedSelenium;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-public interface BrowseEmulator {
+public interface BrowserEmulator {
 
 	/**
 	 * Get the WebDriver instance embedded in BrowserEmulator

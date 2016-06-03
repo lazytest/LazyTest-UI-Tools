@@ -5,7 +5,6 @@ import java.util.Properties;
 
 /**
  * Parameter settings
- * @author LingFei
  */
 public class Settings {
 	
