@@ -127,7 +127,12 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	public JavascriptExecutor getJavaScriptExecutor() {
         return javaScriptExecutor;
     }
-
+    /**
+	 * 返回当前聚焦的window的title
+	 */
+    public String getCurrentWindowTitle(){
+    	return browserCore.getTitle();
+    }
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#open(java.lang.String)
 	 */
@@ -533,7 +538,50 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         browser.selectWindow(windowTitle);
         logger.info("Switched to window " + windowTitle);
     }
+    /**
+	 * Switch window/tab
+	 * 根据title中包含的字符串来切换浏览器的选项卡
+	 * 如果有重名的，默认切换到找到的第一个
+	 * 不包含重试和超时机制
+	 * 不支持设置预先等待时间（通过设置pause变量）
+	 * @param windowTitle
+	 *            the window/tab's title
+	 * @throws Exception 
+	 */
+	public void selectWindowFuzzy(String windowTitleWord) {
+		boolean findit = false;
+		try {
+			selectWindow(windowTitleWord);
+		} catch (Exception e) {
 
+			for (String winHandle : browserCore.getWindowHandles()) {
+				browserCore.switchTo().window(winHandle);
+				if (browserCore.getTitle().contains(windowTitleWord)) {
+					logger.info("Switched to window " + browserCore.getTitle());
+					findit = true;
+					break;
+				}
+			}
+			if(findit==false){
+				throw new RuntimeException("Switched to window fail !!!!");
+			}
+		}
+	}
+	
+	/**
+	 * Switch window/tab
+	 * 切换到driver打开的唯一的window，通常关掉其他窗口后，需要切换回原窗口（driver只剩原窗口）时使用
+	 * @throws Exception 
+	 */
+	public void selectTheOnlyWindow(){
+		Set<String> winHandle = browserCore.getWindowHandles();
+		if(winHandle.size()==1){
+			browserCore.switchTo().window(winHandle.iterator().next());
+		}else{
+			throw new RuntimeException("driver已经没有打开的窗口了");
+		}
+	}
+	
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#enterFrame(java.lang.String)
 	 */

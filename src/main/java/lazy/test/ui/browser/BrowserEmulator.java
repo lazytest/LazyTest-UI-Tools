@@ -32,7 +32,12 @@ public interface BrowserEmulator {
 	 * @return a JavascriptExecutor instance
 	 */
 	JavascriptExecutor getJavaScriptExecutor();
-
+	
+	/**
+	 * 返回当前聚焦的window的title
+	 */
+	String getCurrentWindowTitle();
+	
 	/**
 	 * Open the URL
 	 * 打开一个URL
@@ -223,9 +228,29 @@ public interface BrowserEmulator {
 	 * 不支持设置预先等待时间（通过设置pause变量）
 	 * @param windowTitle
 	 *            the window/tab's title
+	 * @throws Exception 
 	 */
 	void selectWindow(String windowTitle);
-
+	
+	/**
+	 * Switch window/tab
+	 * 根据title中包含的字符串来切换浏览器的选项卡
+	 * 如果有重名的，默认切换到找到的第一个
+	 * 不包含重试和超时机制
+	 * 不支持设置预先等待时间（通过设置pause变量）
+	 * @param windowTitle
+	 *            the window/tab's title
+	 * @throws Exception 
+	 */
+	void selectWindowFuzzy(String windowTitleWord);
+	
+	/**
+	 * Switch window/tab
+	 * 切换到driver打开的唯一的window，通常关掉其他窗口后，需要切换回原窗口（driver只剩原窗口）时使用
+	 * @throws Exception 
+	 */
+	void selectTheOnlyWindow();
+	
 	/**
 	 * Enter the iframe
 	 * 根据xpath，进入一个iframe
