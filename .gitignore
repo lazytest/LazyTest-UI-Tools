@@ -36,6 +36,7 @@ buildNumber.properties
 Network Trash Folder
 Temporary Items
 .apdisk
+.idea
 
 # Windows
 # =========================
@@ -58,3 +59,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+lazy-test-ui-tools.iml

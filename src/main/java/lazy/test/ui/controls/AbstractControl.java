@@ -20,7 +20,7 @@ public abstract class AbstractControl {
 
     private String[] xpath;
 
-    private static String validXpath;
+    private String validXpath;
 
     private String[] textContent;
 
