@@ -1065,6 +1065,36 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         return tableDataList;
     }
 
+    @Override
+    public Map<String,Object> getTableSize(String xpath ) {
+        return getTableSize(xpath , 0);
+    }
+
+    @Override
+    public Map<String,Object> getTableSize(String xpath , int waitTime) {
+
+        pause(waitTime);
+
+        //得到table元素对象
+        WebElement table = findElementByXpath(xpath);
+
+        //得到table表中所有行对象，并得到所要查询的行对象。
+        List<WebElement> rows = table.findElements(By.tagName("tr"));
+
+        Map<String,Object> sizeMap = new HashMap<String, Object>();
+
+        if(null==rows){
+            sizeMap.put("rows", 0);
+            sizeMap.put("cols", 0);
+        }else {
+            List<WebElement> cols = rows.get(0).findElements(By.tagName("td"));
+            sizeMap.put("rows", rows.size());
+            sizeMap.put("cols", cols.size());
+        }
+        return sizeMap;
+    }
+
+
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#select(java.lang.String, java.lang.String)
 	 */

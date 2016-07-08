@@ -452,7 +452,7 @@ public interface BrowserEmulator {
 	 *@return 单元格中的文本值列表
 	 */
 	List<List<String>> getTableList(String xpath);
-	
+
 	/** 
 	 * 得到table中所有单元格的文本值
 	 * 可设置等待时间，以便table完全加载完成
@@ -460,6 +460,24 @@ public interface BrowserEmulator {
 	 * @return 单元格中的文本值列表
 	 */
 	List<List<String>> getTableList(String xpath , int waitTime);
+
+
+    /**
+     * 得到table的行列长度
+     * @param xpath  用于得到table对象
+     *@return <"rows", m>
+     *        <"cols", n>
+     */
+    Map<String,Object> getTableSize (String xpath);
+
+    /**
+     * 得到table的行列长度
+     * 可设置等待时间，以便table完全加载完成
+     * @param xpath  用于得到table对象
+     *@return <"rows", m>
+     *        <"cols", n>
+     */
+    Map<String,Object> getTableSize (String xpath, int waitTime);
 
 	/**
 	 * Select an option by visible text from &lt;select&gt; web element.
