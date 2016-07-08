@@ -2,6 +2,7 @@ package lazy.test.ui.beans;
 
 /**
  * Created by sushidong on 2016/4/28.
+ * Test
  */
 public class TableSize {
 
