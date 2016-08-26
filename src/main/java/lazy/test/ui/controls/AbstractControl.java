@@ -3,10 +3,11 @@ package lazy.test.ui.controls;
 import lazy.test.ui.browser.BrowserEmulator;
 import lazy.test.ui.browser.GlobalSettings;
 import lazy.test.ui.exceptions.ElementNotFoundException;
-
-import com.thoughtworks.selenium.Wait;
-
 import org.apache.commons.lang3.StringUtils;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +67,17 @@ public abstract class AbstractControl {
 
     public String toString() {
         return "Control{type=" + this.getClass().getSimpleName() +
-                ", xpath=[" + StringUtils.join(xpath,",") + "]" +
-                ", textContent=[" + StringUtils.join(textContent,",") + "]" +
+                ", xpath=[" + StringUtils.join(xpath, ",") + "]" +
+                ", textContent=[" + StringUtils.join(textContent, ",") + "]" +
                 ", frame=" + frame +
                 ", description=" + description +
                 "}";
+    }
+
+    public WebElement getWebElement(String xpath) {
+        WebDriverWait webDriverWait = new WebDriverWait(be.getBrowserCore(), 3);
+        WebElement element = webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpath)));
+        return element;
     }
 
     protected void enterFrame() {
@@ -83,31 +90,22 @@ public abstract class AbstractControl {
 
     public String getValidXpath() {
         enterFrame();
-
-        try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag = false;
-
-                    for (String xpath : getXpath()) {
-                        flag = be.isElementPresent(xpath);
-
-                        if (flag) {
-                            validXpath = xpath;
-                            break;
-                        }
-                    }
-
-                    return flag;
+        String[] xpathArr = getXpath();
+        WebDriverWait webDriverWait = new WebDriverWait(be.getBrowserCore(), 3);
+        for (int i = 0; i < xpathArr.length; i++) {
+            try {
+                WebElement res = webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.xpath(xpathArr[i])));
+                if (null != res) {
+                    validXpath = xpathArr[i];
+                    break;
                 }
-            }.wait("Failed to find element [" + StringUtils.join(getXpath(), ",")+ "]", Integer.parseInt(GlobalSettings.timeout), Integer.parseInt(GlobalSettings.stepInterval));
-
-            logger.info("Found desired element [" + StringUtils.join(getXpath(), ",")+ "]");
-        } catch (Exception e) {
-            logger.info(e.getMessage(), e);
-            throw new ElementNotFoundException(e.getMessage());
+            } catch (Exception e) {
+                if (i == xpathArr.length - 1) {
+                    logger.error(e.getMessage());
+                    throw new ElementNotFoundException(e.getMessage());
+                }
+            }
         }
-
         return validXpath;
     }
 
