@@ -25,6 +25,10 @@ public class GlobalSettings {
 
     public static String pause = prop.getProperty("Pause", "500");
 
+	public static String AndroidDeviceSerial = prop.getProperty("AndroidDeviceSerial", "PBJZ99KZJJAQLZS8");
+
+	public static String EmulatorDeviceName = prop.getProperty("EmulatorDeviceName","Google Nexus 4");
+
 	public static String getProperty(String property) {
 		return prop.getProperty(property);
 	}

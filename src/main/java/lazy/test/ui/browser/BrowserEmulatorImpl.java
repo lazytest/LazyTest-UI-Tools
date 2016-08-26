@@ -1,17 +1,23 @@
 package lazy.test.ui.browser;
 
-import com.thoughtworks.selenium.Wait;
-import lazy.test.ui.exceptions.ElementNotFoundException;
+//import com.thoughtworks.selenium.Wait;
+
+import com.thoughtworks.selenium.webdriven.WebDriverBackedSelenium;
 import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.support.ui.ExpectedCondition;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -23,6 +29,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * BrowserEmulator is based on Selenium2 and adds some enhancements
@@ -33,9 +40,13 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
     WebDriverBackedSelenium browser;
     ChromeDriverService chromeServer;
     JavascriptExecutor javaScriptExecutor;
+    WebDriverWait webDriverWait;
 
     String chromeDriverPath;
     String ieDriverPath;
+
+    String AndroidDeviceSerial = GlobalSettings.AndroidDeviceSerial;
+    String EmulatorDeviceName = GlobalSettings.EmulatorDeviceName;
 
     int stepInterval = Integer.parseInt(GlobalSettings.stepInterval);
     int timeout = Integer.parseInt(GlobalSettings.timeout);
@@ -46,6 +57,9 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
     public BrowserEmulatorImpl() {
         chromeDriverPath = GlobalSettings.chromeDriverPath;
         ieDriverPath = GlobalSettings.ieDriverPath;
+
+        logger.info("chromeDriverPath:{}", chromeDriverPath);
+        logger.info("ieDriverPath:{}", ieDriverPath);
 
         if (!chromeDriverPath.startsWith("/")) {
             chromeDriverPath = "/" + chromeDriverPath;
@@ -59,8 +73,9 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         ieDriverPath = this.getClass().getResource(ieDriverPath).getPath();
 
         setupBrowserCoreType(GlobalSettings.browserCoreType);
-        browser = new WebDriverBackedSelenium(browserCore, "http://www.163.com/");
+//        browser = new WebDriverBackedSelenium(browserCore, "http://www.163.com/");
         javaScriptExecutor = (JavascriptExecutor) browserCore;
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         logger.info("Started BrowserEmulator");
     }
 
@@ -100,7 +115,26 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
             logger.info("Using Safari");
             return;
         }
+        if(type == 5){
+            ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.setExperimentalOption("androidPackage", "com.android.chrome");
+            chromeOptions.setExperimentalOption("androidDeviceSerial", AndroidDeviceSerial);
+            browserCore = new ChromeDriver(new ChromeDriverService.Builder().usingDriverExecutable(new File(chromeDriverPath)).usingAnyFreePort().build(),chromeOptions);
+            logger.info("Using Chrome Browser on Android Device,Serial is: {}", AndroidDeviceSerial);
+            return;
+    }
+    if(type == 6){
+        Map<String, String> mobileEmulation = new HashMap<String, String>();
+        mobileEmulation.put("deviceName", EmulatorDeviceName);
+        Map<String, Object> Options = new HashMap<String, Object>();
+        Options.put("mobileEmulation", mobileEmulation);
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setCapability(ChromeOptions.CAPABILITY, Options);
 
+        browserCore = new ChromeDriver(new ChromeDriverService.Builder().usingDriverExecutable(new File(chromeDriverPath)).usingAnyFreePort().build(),capabilities);
+        logger.info("Using H5-Emulator on PC Chrome ");
+        return;
+    }
         Assert.fail("Incorrect browser type");
     }
 
@@ -112,13 +146,18 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         return browserCore;
     }
 
+    @Override
+    public WebDriverWait getWebDriverWait() {
+        return webDriverWait;
+    }
+
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#getBrowser()
 	 */
-    @Override
-	public WebDriverBackedSelenium getBrowser() {
-        return browser;
-    }
+//    @Override
+//	public WebDriverBackedSelenium getBrowser() {
+//        return browser;
+//    }
 
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#getJavaScriptExecutor()
@@ -138,13 +177,14 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void open(String url) {
-        pause(pause);
+//        pause(pause);
         try {
-            browser.open(url);
+            browserCore.get(url);
         } catch (Exception e) {
             e.printStackTrace();
             handleFailure("Failed to open url " + url);
         }
+        pause(pause);
         logger.info("Opened url " + url);
     }
 
@@ -153,12 +193,14 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void quit() {
+        //替换
         pause(pause);
         browserCore.quit();
-        if (GlobalSettings.browserCoreType == 2) {
+        int type = GlobalSettings.browserCoreType;
+        if ( type== 2 || type == 5 || type == 6) {
             chromeServer.stop();
         }
-        logger.info("Quitted BrowserEmulator");
+        logger.info("Success to quit BrowserEmulator");
     }
 
     /* (non-Javadoc)
@@ -166,7 +208,6 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void click(String xpath) {
-        //expectElementExistOrNot(true, xpath, timeout);
         click(new String[] {xpath});
     }
 
@@ -176,13 +217,14 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
     @Override
 	public void click(String[] xpath) {
         pause(pause);
-        //expectElementExistOrNot(true, xpath, timeout);
         try {
             clickTheClickable(xpath);
+            logger.info("Succeed to click[" + StringUtils.join(xpath, ",") + "]");
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to click element by xpathArray:{} , exception:{}" , StringUtils.join(xpath, ", "), e.getMessage());
+            handleFailure("Click failed");
         }
-        logger.info("Clicked [" + StringUtils.join(xpath, ",") + "]");
+
     }
 
     /**
@@ -191,24 +233,32 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
      * @throws Exception
      */
     private void clickTheClickable(final String[] xpathArray) throws Exception {
-        new Wait() {
-            public boolean until() {
-                boolean flag = false;
-
-                for (String xpath : xpathArray) {
-                    try {
-                        findElement(xpath).click();
-                        flag =  true;
-                        break;
-                    } catch (Exception e) {
-                        logger.info("Click failed, xpath = " + xpath, e);
-                        flag = false;
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
+        try {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    boolean flag = false;
+                    for (String xpath: xpathArray) {
+                        try {
+                            WebElement e = findElement(xpath);
+                            if (null != e && e.isDisplayed() && e.isEnabled()) {
+                                e.click();
+                                flag = true;
+                                break;
+                            }
+                        } catch (Exception e) {
+                            continue;
+                        }
                     }
+                    return flag;
                 }
-
-                return flag;
-            }
-        }.wait("Timeout when click [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
+            });
+            logger.info("Succeed to clickTheClickable element by:{}", StringUtils.join(xpathArray,","));
+        } catch (Exception e) {
+            logger.error("Failed to clickTheClickable element by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Click failed");
+        }
     }
 
     /* (non-Javadoc)
@@ -224,32 +274,29 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void check(final String[] xpathArray) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             JavascriptExecutor js = getJavaScriptExecutor();
-
                             js.executeScript("document.evaluate(\"" + xpath + "\",document,null,XPathResult.ANY_TYPE,null).iterateNext().checked=true;");
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Check failed, xpath = " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when check [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to check element by:{}", StringUtils.join(xpathArray,","));
+        }catch (Exception e){
+            logger.error("Failed to check element by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Check failed");
         }
     }
 
@@ -275,35 +322,32 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void type(final String[] xpathArray, final String text) {
-        pause(pause);
-        //expectElementExistOrNot(true, xpath, timeout);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag = false;
-
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                boolean flag = false;
+                @Override
+                public Boolean apply(WebDriver driver) {
                     for (String xpath : xpathArray) {
                         try {
                             WebElement we = findElement(xpath);
                             we.clear();
                             we.sendKeys(text);
-
                             logger.info("Type " + text + " at " + xpath);
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to type " + text + " at [" + xpath + "]");
                             flag = false;
                         }
                     }
 
                     return flag;
                 }
-            }.wait("Timeout when type " + text + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            logger.info("", e);
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to Type element by:{}", StringUtils.join(xpathArray,","));
+        }catch (Exception e){
+            logger.error("Failed to type by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Type failed");
         }
     }
 
@@ -320,32 +364,29 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void clear(final String[] xpathArray) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag = false;
-
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                boolean flag = false;
+                @Override
+                public Boolean apply(WebDriver driver) {
                     for (String xpath : xpathArray) {
                         try {
                             JavascriptExecutor js = getJavaScriptExecutor();
-
                             js.executeScript("document.evaluate(\"" + xpath + "\",document,null,XPathResult.ANY_TYPE,null).iterateNext().value='';");
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to clear at xpath " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when clear at xpath [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
+            });
+            logger.info("Succeed to Clear element by:{}", StringUtils.join(xpathArray,","));
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to clear by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Clear failed");
         }
     }
 
@@ -362,32 +403,29 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void uncheck(final String[] xpathArray) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag = false;
-
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                boolean flag = false;
+                @Override
+                public Boolean apply(WebDriver driver) {
                     for (String xpath : xpathArray) {
                         try {
                             JavascriptExecutor js = getJavaScriptExecutor();
-
                             js.executeScript("document.evaluate(\"" + xpath + "\",document,null,XPathResult.ANY_TYPE,null).iterateNext().checked=false;");
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to uncheck at xpath " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when uncheck at xpath [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
+            });
+            logger.info("Succeed to uncheck element by:{}", StringUtils.join(xpathArray,","));
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to uncheck by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Unchedk failed");
         }
     }
 
@@ -404,7 +442,6 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void calendarInput(final String[] xpathArray, final String date) {
-
         //检查date是否是正确的日期格式
         try{
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -414,37 +451,31 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
             boolean dateFormat = false;
             Assert.assertTrue(dateFormat,"The input date formate:" + date + " is wrong!");
         }
-
-        pause(pause);
-        //expectElementExistOrNot(true, xpath, timeout);
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
 
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             JavascriptExecutor js = getJavaScriptExecutor();
-
                             js.executeScript("document.evaluate(\"" + xpath + "\",document,null,XPathResult.ANY_TYPE,null).iterateNext().value='" + date + "';");
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to type date at xpath " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when type date at xpath [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
+            });
+            logger.info("Succeed to input calendar by:{}", StringUtils.join(xpathArray,","));
         } catch (Exception e) {
+            logger.error("Failed to input calendar by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
             handleFailure(e.getMessage());
         }
-
-        logger.info("Type " + date + " at [" + StringUtils.join(xpathArray, ",") + "]");
     }
 
     /* (non-Javadoc)
@@ -460,14 +491,15 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void mouseOver(final String[] xpathArray) {
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
 
+        final int browserType = GlobalSettings.browserCoreType;
         // Selenium doesn't support the Safari browser
-        if (GlobalSettings.browserCoreType == 4) {
-            Assert.fail("Mouseover is not supported for Safari now");
+        if (browserType == 4 || browserType == 5 || browserType == 6) {
+            Assert.fail("Mouseover is not supported for this browser now");
             Assert.fail("Incorrect browser type");
         }
 
-        pause(pause);
         //expectElementExistOrNot(true, xpath, timeout);
         // First make mouse out of browser
         Robot rb = null;
@@ -477,56 +509,48 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
             e.printStackTrace();
         }
         rb.mouseMove(0, 0);
-
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag = false;
-
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    Boolean flag = false;
                     for (String xpath : xpathArray) {
-                        // Then hover
                         WebElement we = findElement(xpath);
-
-                        if (GlobalSettings.browserCoreType == 2) {
+                        //5 和 6 因项目没有该事件，没有测试完成
+                        if (browserType == 2) {
                             try {
                                 Actions builder = new Actions(browserCore);
                                 builder.moveToElement(we).build().perform();
                                 flag = true;
                                 break;
                             } catch (Exception e) {
-                                logger.info("Failed to mouseover " + xpath, e);
+                                logger.error("Failed to mouseover " + xpath, e.getMessage());
                                 flag = false;
                             }
 
                             logger.info("Mouseover " + xpath);
-                        }
-
-                        // Firefox and IE require multiple cycles, more than twice, to cause a
-                        // hovering effect
-                        if (GlobalSettings.browserCoreType == 1
-                                || GlobalSettings.browserCoreType == 3) {
+                        } else if (browserType == 1 || browserType == 3) {
                             try {
-                                for (int i = 0; i < 5; i++) {
+                                for (int i = 0; i < 5; i++) {//编译器警告，是否有必要
                                     Actions builder = new Actions(browserCore);
                                     builder.moveToElement(we).build().perform();
+                                    logger.info("Mouseover " + xpath);
+                                    flag = true;
+                                    break;
                                 }
-                                logger.info("Mouseover " + xpath);
-                                flag = true;
-                                break;
-                            } catch (Exception e) {
-                                logger.info("Failed to mouseover " + xpath, e);
+                            }catch (Exception e) {
+                                logger.error("Failed to mouseover " + xpath, e.getMessage());
                                 flag = false;
                             }
-
-                            logger.info("Mouseover " + xpath);
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when mouseover on xpath [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to mouseOver by xpathArray:{} ", StringUtils.join(xpathArray, ", "));
+        }catch (Exception e){
+            logger.error("Failed to mouseOver by xpathArray:{} , exception:{}" , StringUtils.join(xpathArray, ", "), e.getMessage());
+            handleFailure("Failed to mouseOver");
         }
     }
 
@@ -535,7 +559,7 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void selectWindow(String windowTitle) {
-        browser.selectWindow(windowTitle);
+        browserCore.switchTo().window(windowTitle);
         logger.info("Switched to window " + windowTitle);
     }
     /**
@@ -544,7 +568,7 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 * 如果有重名的，默认切换到找到的第一个
 	 * 不包含重试和超时机制
 	 * 不支持设置预先等待时间（通过设置pause变量）
-	 * @param windowTitle
+	 * @param windowTitleWord
 	 *            the window/tab's title
 	 * @throws Exception 
 	 */
@@ -553,19 +577,21 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 		try {
 			selectWindow(windowTitleWord);
 		} catch (Exception e) {
-
-			for (String winHandle : browserCore.getWindowHandles()) {
-				browserCore.switchTo().window(winHandle);
-				if (browserCore.getTitle().contains(windowTitleWord)) {
-					logger.info("Switched to window " + browserCore.getTitle());
-					findit = true;
-					break;
-				}
+            Set<String> handles = browserCore.getWindowHandles();
+            Iterator<String> it = handles.iterator();
+            while(it.hasNext()){
+                if(windowTitleWord== it.next()) {
+                    browserCore.switchTo().window(it.next());
+                    logger.info("Switched to window " + browserCore.getTitle());
+                    findit = true;
+                    break;
+                }
 			}
 			if(findit==false){
 				throw new RuntimeException("Switched to window fail !!!!");
 			}
 		}
+        logger.info("Succeed to select window by:{}", windowTitleWord);
 	}
 	
 	/**
@@ -580,37 +606,22 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 		}else{
 			throw new RuntimeException("driver已经没有打开的窗口了");
 		}
+        logger.info("Succeed to select the only window ");
 	}
 	
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#enterFrame(java.lang.String)
 	 */
     @Override
-	public void enterFrame(final String xpath) {
-        //browserCore.switchTo().frame(findElement(xpath));
-        //logger.info("Entered iframe " + xpath);
-
+	public void enterFrame(String xpath) {
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag;
-                    try {
-                        //pause(stepInterval);
-                        browserCore.switchTo().frame(findElement(xpath));
-                        logger.info("Entered iframe " + xpath);
-
-                        flag = true;
-                    } catch (Exception e) {
-                        logger.info("Entered iframe " + xpath + " failed");
-                        flag = false;
-                    }
-
-                    return flag;
-                }
-            }.wait("Timeout when enter iframe " + xpath, timeout, stepInterval);
+            webDriverWait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.xpath(xpath)));
+            logger.info("Enter frame ");
         } catch (Exception e) {
             handleFailure(e.getMessage());
         }
+        logger.info("Succeed to enter frame by xpath:{}", xpath);
     }
 
     /* (non-Javadoc)
@@ -618,26 +629,13 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void enterFrameByNameOrId(final String nameOrId) {
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag;
-                    try {
-                        browserCore.switchTo().frame(nameOrId);
-
-                        flag = true;
-
-                        logger.info("Entered iframe " + nameOrId);
-                    } catch (Exception e) {
-                        logger.info("Entered iframe " + nameOrId + " failed");
-                        flag = false;
-                    }
-
-                    return flag;
-                }
-            }.wait("Timeout when enter iframe " + nameOrId, timeout, stepInterval);
+            webDriverWait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(nameOrId));
+            logger.info("Succeed to enter frame by {}", nameOrId);
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to enter frame by {}, exception:{}", nameOrId, e.getMessage());
+            handleFailure("Failed to enter frame");
         }
     }
 
@@ -646,30 +644,26 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void leaveFrame() {
-        //pause(stepInterval);
-        //browserCore.switchTo().defaultContent();
-        //logger.info("Left the iframe");
-
-        try {
-            new Wait() {
-                public boolean until() {
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
+        try{
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag;
                     try {
-                        //pause(stepInterval);
                         browserCore.switchTo().defaultContent();
-                        logger.info("Left the iframe");
-
                         flag = true;
-                    } catch (Exception e) {
-                        logger.info("Failed to leave iframe");
+
+                    }catch (Exception e) {
                         flag = false;
                     }
-
-                    return flag;
+                    return  flag;
                 }
-            }.wait("Timeout when leave iframe", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to leave the frame");
+        }catch (Exception e){
+            logger.error("Failed to leave frame, exception:{}", e.getMessage());
+            handleFailure("Failed to leave frame");
         }
     }
 
@@ -678,30 +672,27 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void refresh() {
-        //pause(stepInterval);
-        //browserCore.navigate().refresh();
-        //logger.info("Refreshed");
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
-                    boolean flag;
-                    try {
-                        //pause(stepInterval);
-                        browserCore.navigate().refresh();
+            webDriverWait.until(ExpectedConditions.refreshed(new ExpectedCondition<Boolean>() {
+                Boolean flag = false;
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    String orgTitle = driver.getTitle();
+                    driver.navigate().refresh();
+                    if (orgTitle.equals(driver.getTitle())) {
                         logger.info("Refreshed");
-
                         flag = true;
-                    } catch (Exception e) {
-                        logger.info("Failed to refresh");
+                    } else {
                         flag = false;
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when refresh", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            }));
+            logger.info("Succeed to refresh page");
+        }catch (Exception e){
+            logger.error("Failed to refresh page , exception:{}", e.getMessage());
+            handleFailure("Failed to refresh");
         }
     }
 
@@ -710,29 +701,30 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void pressKeyboard(final int keyCode) {
-        pause(pause);
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag;
                     try {
                         Robot rb = new Robot();
-                        rb.keyPress(keyCode);	// press key
-                        rb.delay(100); 			// delay 100ms
-                        rb.keyRelease(keyCode);	// release key
+                        rb.keyPress(keyCode);    // press key
+                        rb.delay(100);            // delay 100ms
+                        rb.keyRelease(keyCode);    // release key
                         logger.info("Pressed key with code " + keyCode);
-
                         flag = true;
                     } catch (Exception e) {
-                        logger.info("Failed to press key with code " + keyCode);
                         flag = false;
                     }
 
                     return flag;
                 }
-            }.wait("Timeout when press key with code " + keyCode, timeout, stepInterval);
+            });
+            logger.info("Succeed to pressKeyboard by {}", keyCode);
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to pressKeyboard by {}, exception:{}", keyCode, e.getMessage());
+            handleFailure("Failed to pressKeyboard");
         }
     }
 
@@ -741,19 +733,18 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void inputKeyboard(final String text) {
-        pause(pause);
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag;
                     Process p = null;
                     try {
                         String cmd = System.getProperty("user.dir") + "\\res\\SeleniumCommand.exe" + " sendKeys " + text;
-
                         p = Runtime.getRuntime().exec(cmd);
                         p.waitFor();
                         logger.info("Pressed key with string " + text);
-
                         flag = true;
                     } catch (Exception e) {
                         logger.info("Failed to press key string " + text);
@@ -761,12 +752,13 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
                     } finally {
                         if (p != null) p.destroy();
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when press key with string " + text, timeout, stepInterval);
+            });
+            logger.info("Succeed to inputKeyboard by {}", text);
         } catch (Exception e) {
-            handleFailure(e.getMessage());
+            logger.error("Failed to inputKeyboard by {}, exception:{}", text, e.getMessage());
+            handleFailure("Failed to inputKeyboard");
         }
     }
 
@@ -785,25 +777,25 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public boolean isTextExists(final String[] textArray) {
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            Boolean res = webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
-                    for (String text : textArray) {
-                        flag = isTextPresent(text);
-
-                        if (!flag) {
+                    for (int i = 0; i < textArray.length; i++) {
+                        flag = isTextPresent(textArray[i]);
+                        if (flag) {
                             break;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout to find text [" + StringUtils.join(textArray, ",") + "]", timeout, stepInterval);
-            return true;
-        } catch (Exception e) {
-            logger.info("Not all text [" + StringUtils.join(textArray, ",") + "] exists", e);
+            });
+            logger.info("Succeed to find text by:{}", StringUtils.join(textArray, ","));
+            return res;
+        }catch(Exception e){
+            logger.error("Failed to find text by:{}, exception:{}", StringUtils.join(textArray, ","), e.getMessage());
             return false;
         }
     }
@@ -820,37 +812,33 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 * @see lazy.test.ui.browser.BrowseEmulator#expectTextExistOrNot(boolean, java.lang.String, int)
 	 */
     @Override
-	public void expectTextExistOrNot(boolean expectExist, final String text, int timeout) {
-        if (expectExist) {
-            try {
-                new Wait() {
-                    public boolean until() {
-                        return isTextPresent(text);
-                    }
-                }.wait("Failed to find text " + text, timeout, stepInterval);
-            } catch (Exception e) {
-                logger.info(e.getMessage(),e);
-                handleFailure("Failed to find text " + text);
+	public void expectTextExistOrNot(final boolean expectExist, final String text, int timeout) {
+        webDriverWait = new WebDriverWait(browserCore, Long.valueOf(timeout)/1000);
+        Boolean res = false;
+        try {
+            res = webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
+                    return browserCore.getPageSource().contains(text);
+                }
+            });
+        }catch (Exception e){
+            res = false;
+        }
+        if(expectExist){
+            if(res){
+                logger.info("Expect desired text:{} and found it ", text);
+            } else {
+                logger.error("Expect desired text:{} ,but not found it ", text);
+                handleFailure("Expect desired text:" + text + " ,but not found it ");
             }
-            logger.info("Found desired text " + text);
-        } else {
-			/*if (isTextPresent(text)) {
-				handleFailure("Found undesired text " + text);
-			} else {
-				logger.info("Not found undesired text " + text);
-			}*/
-
-            try {
-                new Wait() {
-                    public boolean until() {
-                        return !isTextPresent(text);
-                    }
-                }.wait("Found undesired text " + text, timeout, stepInterval);
-            } catch (Exception e) {
-                logger.info(e.getMessage(),e);
-                handleFailure("Found undesired text " + text);
+        }else{
+            if(!res){
+                logger.info("Expect undesired text:{} and not found it ", text);
+            } else {
+                logger.error("Expect undesired text:{},but found it ", text);
+                handleFailure("Expect undesired text:" + text + ",but found it ");
             }
-            logger.info("Not found undesired text " + text);
         }
     }
 
@@ -867,81 +855,54 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void expectElementExistOrNot(boolean expectExist, final String[] xpathArray, int timeout) {
-        if (expectExist) {
+        boolean flag = false;
+        webDriverWait = new WebDriverWait(browserCore, timeout / 1000);
+        for (String xpath : xpathArray) {
             try {
-                new Wait() {
-                    public boolean until() {
-                        boolean flag = false;
-
-                        for (String xpath : xpathArray) {
-                            flag = isElementPresent(xpath);
-
-                            if (flag) {
-                                break;
-                            }
-                        }
-
-                        return flag;
-                    }
-                }.wait("Failed to find element [" + StringUtils.join(xpathArray, ",")+ "]", timeout, stepInterval);
-
-                logger.info("Found desired element [" + StringUtils.join(xpathArray, ",")+ "]");
+                WebElement element = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+                if (null != element && element.isDisplayed()) {
+                    flag = true;
+                    break;
+                }
+            } catch (NoSuchElementException e) {
+                continue;
             } catch (Exception e) {
-                logger.info(e.getMessage(),e);
-                handleFailure(e.getMessage());
+                break;
+            }
+        }
+        if (expectExist) {
+            if (flag) {
+                logger.info("Found desired element [" + StringUtils.join(xpathArray, ",") + "]");
+            } else {
+                logger.error("Not found desired element [" + StringUtils.join(xpathArray, ",") + "]");
+                handleFailure("Not found desired element [" + StringUtils.join(xpathArray, ",") + "]");
             }
         } else {
-            try {
-                new Wait() {
-                    public boolean until() {
-                        boolean flag = false;
-
-                        for (String xpath : xpathArray) {
-                            flag = !isElementPresent(xpath);
-
-                            if (!flag) {
-                                break;
-                            }
-                        }
-
-                        return flag;
-                    }
-                }.wait("Failed to find element [" + StringUtils.join(xpathArray, ",")+ "]", timeout, stepInterval);
-
-                logger.info("Not found undesired element [" + StringUtils.join(xpathArray, ",")+ "]");
-            } catch (Exception e) {
-                logger.info(e.getMessage(),e);
-                handleFailure("Found undesired element [" + StringUtils.join(xpathArray, ",")+ "]");
-            }
-
-            /*if (isElementPresent(xpath, stepInterval)) {
-                if (tried == GlobalSettings.retry) {
-                    handleFailure("Found undesired element " + xpath);
-                }
-
-                pause(stepInterval);
-                logger.info("Found undesired element " + xpath + ", retry " + (++tried));
+            if (!flag) {
+                logger.info("Not found undesired element [" + StringUtils.join(xpathArray, ",") + "]");
             } else {
-                logger.info("Not found undesired element " + xpath);
-                break;
-            }*/
+                logger.error("Found undesired element [" + StringUtils.join(xpathArray, ",") + "]");
+                handleFailure("Found undesired element [" + StringUtils.join(xpathArray, ",") + "]");
+            }
         }
     }
 
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#isTextPresent(java.lang.String)
 	 */
-    @Override
+//    @Override
 	public boolean isTextPresent(String text) {
-        //pause(time);
-        boolean isPresent = browser.isTextPresent(text);
-        if (isPresent) {
-            logger.info("Found text " + text);
-            return true;
-        } else {
-            logger.info("Not found text " + text);
-            return false;
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
+        Boolean flag = false;
+        try {
+            Boolean e = webDriverWait.until(ExpectedConditions.textToBePresentInElementLocated(By.xpath("//*[contains(.,'" + text + "')]"), text));
+            logger.info("Succeed text:{} and displayed", text);
+            flag = e;
+        } catch (Exception ex) {
+            logger.error("Failed found text:{}, exception:{}", text, ex.getMessage());
+            flag=false;
         }
+        return flag ;
     }
 
     /* (non-Javadoc)
@@ -949,13 +910,11 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public boolean isElementPresent(String xpath) {
-        //pause(time);
-        boolean isPresent = browser.isElementPresent(xpath) && findElement(xpath).isDisplayed();
-        if (isPresent) {
+        if (null!=findElement(xpath) && findElement(xpath).isDisplayed()) {
             logger.info("Found element " + xpath);
             return true;
         } else {
-            logger.info("Not found element" + xpath);
+            logger.error("Not found element" + xpath);
             return false;
         }
     }
@@ -1108,32 +1067,30 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void select(final String[] xpathArray, final String option) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = findElement(xpath);
                             Select select = new Select(element);
                             select.selectByVisibleText(option);
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to select " + option + " at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when select " + option + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to select element by:{}", StringUtils.join(xpathArray, ","));
+        }catch (Exception e){
+            logger.error("Failed to select element by:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to select");
         }
     }
 
@@ -1150,11 +1107,11 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void selectByIndex(final String[] xpathArray, final int index) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
 
                     for (String xpath : xpathArray) {
@@ -1166,16 +1123,16 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to select index " + index + " at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when select index " + index + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to select by index using:{}", StringUtils.join(xpathArray, ","));
+        }catch (TimeoutException e){
+            logger.error("Failed to select by index using:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to select by index");
         }
     }
 
@@ -1192,32 +1149,30 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void selectByValue(final String[] xpathArray, final String value) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = findElement(xpath);
                             Select select = new Select(element);
                             select.selectByValue(value);
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to select value " + value + " at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when select value " + value + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to select by value using:{}", StringUtils.join(xpathArray, ","));
+        }catch (TimeoutException e){
+            logger.error("Failed to select by value using:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to select by value");
         }
     }
 
@@ -1234,32 +1189,30 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void deSelect(final String[] xpathArray, final String option) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = findElement(xpath);
                             Select select = new Select(element);
                             select.deselectByVisibleText(option);
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to deselect " + option + " at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when deselect " + option + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to deselect by:{}", StringUtils.join(xpathArray, ","));
+        }catch (Exception e){
+            logger.error("Failed to deselect by:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to deselect ");
         }
     }
 
@@ -1276,32 +1229,30 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void deSelectByIndex(final String[] xpathArray, final int index) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = findElement(xpath);
                             Select select = new Select(element);
                             select.deselectByIndex(index);
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to deselect index " + index + " at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when deselect index " + index + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to deselect by index using :{}", StringUtils.join(xpathArray, ","));
+        }catch (Exception e){
+            logger.error("Failed to deselect by index using :{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to deselect by index ");
         }
     }
 
@@ -1318,32 +1269,32 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void deSelectByValue(final String[] xpathArray, final String value) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = findElement(xpath);
                             Select select = new Select(element);
                             select.deselectByValue(value);
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to deselect value " + value + " at " + xpath, e);
+                            logger.error(e.getMessage());
                             flag = false;
+                            handleFailure("Failed to deselect value " + value + " at " + xpath);
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when deselect value " + value + " at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to deselect by value using :{}", StringUtils.join(xpathArray, ","));
+        }catch (Exception e){
+            logger.error("Failed to deselect by value using xpath:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to deselect by value ");
         }
     }
 
@@ -1360,37 +1311,34 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public void clearSelection(final String[] xpathArray) {
-        pause(pause);
-
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000);
         try {
-            new Wait() {
-                public boolean until() {
+            webDriverWait.until(new ExpectedCondition<Boolean>() {
+                @Override
+                public Boolean apply(WebDriver driver) {
                     boolean flag = false;
-
                     for (String xpath : xpathArray) {
                         try {
                             WebElement element = browserCore.findElement(By.xpath(xpath));
                             Select select = new Select(element);
-
                             if (select.isMultiple()) {
                                 select.deselectAll();
                             } else {
                                 select.selectByIndex(0);
                             }
-
                             flag = true;
                             break;
                         } catch (Exception e) {
-                            logger.info("Failed to clear selection at " + xpath, e);
                             flag = false;
                         }
                     }
-
                     return flag;
                 }
-            }.wait("Timeout when clear selection at [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
-        } catch (Exception e) {
-            handleFailure(e.getMessage());
+            });
+            logger.info("Succeed to clear selection by value using :{}", StringUtils.join(xpathArray, ","));
+        }catch (Exception e){
+            logger.error("Failed to clear selection by value using xpath:{}, exception:{}", StringUtils.join(xpathArray, ","), e.getMessage());
+            handleFailure("Failed to clear selection by value ");
         }
     }
 
@@ -1401,20 +1349,14 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	public List<Map<String, String>> getAllOptions(String xpath) {
         WebElement element = findElement(xpath);
         Select select = new Select(element);
-
         List<WebElement> options = select.getOptions();
-
         List<Map<String, String>> optionsText = new ArrayList<Map<String, String>>();
-
         for (WebElement webElement : options) {
             HashMap<String, String> option = new HashMap<String, String>();
-
             option.put("value", webElement.getAttribute("value"));
             option.put("text", webElement.getText());
-
             optionsText.add(option);
         }
-
         return optionsText;
     }
 
@@ -1463,17 +1405,17 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         if (GlobalSettings.browserCoreType != 3) {
             click(xpathArray);
         } else {
+            webDriverWait = new WebDriverWait(browserCore, timeout/1000);
             try {
-                new Wait() {
-                    public boolean until() {
+                webDriverWait.until(new ExpectedCondition <Boolean>() {
+                    @Override
+                    public Boolean apply(WebDriver driver) {
                         boolean flag = false;
 
                         for (String xpath : xpathArray) {
                             try {
                                 JavascriptExecutor js = getJavaScriptExecutor();
-
                                 js.executeScript("document.evaluate(\"" + xpath + "\",document,null,XPathResult.ANY_TYPE,null).iterateNext().click();");
-
                                 flag = true;
                                 break;
                             } catch (Exception e) {
@@ -1481,16 +1423,16 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
                                 flag = false;
                             }
                         }
-
                         return flag;
                     }
-                }.wait("Timeout when click file browser at xpath [" + StringUtils.join(xpathArray, ",") + "]", timeout, stepInterval);
+                });
+                logger.info("Succeed to click file browser at :{},  exception:{}" + StringUtils.join(xpathArray, ","));
             } catch (Exception e) {
-                handleFailure(e.getMessage());
+                logger.error("Failed to click file browser at :{},  exception:{}" + StringUtils.join(xpathArray, ","), e.getMessage());
+                handleFailure("Failed to click file browser");
             }
         }
     }
-
 
     /* (non-Javadoc)
 	 * @see lazy.test.ui.browser.BrowseEmulator#clickAlert()
@@ -1510,24 +1452,21 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
 	 */
     @Override
 	public WebElement findElementByXpath(final String xpath) {
+        WebElement element = null;
+        webDriverWait = new WebDriverWait(browserCore, timeout/1000 );
         try {
-            new Wait() {
-                public boolean until() {
-                    return isElementPresent(xpath);
-                }
-            }.wait("Failed to find element [" + xpath+ "]", Integer.parseInt(GlobalSettings.timeout), Integer.parseInt(GlobalSettings.stepInterval));
+            element = webDriverWait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
+            logger.info("Found desired element [" + xpath + "]");
 
-            logger.info("Found desired element [" + xpath+ "]");
         } catch (Exception e) {
-            logger.info(e.getMessage(), e);
-            throw new ElementNotFoundException(e.getMessage());
+            logger.error("Fail to find element [" + xpath+ "], Cause:{}", e.getMessage());
+            throw new TimeoutException(e.getMessage());
         }
-
-        return this.getBrowserCore().findElement(By.xpath(xpath));
+        return  element;
     }
 
 	@Override
 	public String getCurrentUrl() {
-		return browser.getWrappedDriver().getCurrentUrl();
+        return browserCore.getCurrentUrl();
 	}
 }

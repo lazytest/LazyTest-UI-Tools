@@ -2,13 +2,16 @@ package lazy.test.ui.browser;
 /**
  * Created by yangyang on 2016/6/3.
  */
+
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.util.List;
 import java.util.Map;
 
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriverBackedSelenium;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
+//import org.openqa.selenium.WebDriverBackedSelenium;
 
 public interface BrowserEmulator {
 
@@ -24,8 +27,14 @@ public interface BrowserEmulator {
 	 * 获取selenium控制的浏览器实例
 	 * @return a WebDriverBackedSelenium instance
 	 */
-	WebDriverBackedSelenium getBrowser();
+//	WebDriverBackedSelenium getBrowser();
 
+	/**
+	 * Get the WebDriver Wait instance embedded in BrowserEmulator
+	 * 获取当前WebDriver使用的WebDriverWait
+	 * @return WebDriverWait instance;
+	 */
+	WebDriverWait getWebDriverWait();
 	/**
 	 * Get the JavascriptExecutor instance embedded in BrowserEmulator
 	 * 获取JavaScript执行器
