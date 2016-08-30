@@ -32,7 +32,7 @@ public class LogTools {
 			augmentedDriver = be.getBrowserCore();
 			augmentedDriver.manage().window().setPosition(new Point(0, 0));
 			augmentedDriver.manage().window().setSize(new Dimension(9999, 9999));
-		} else if (GlobalSettings.browserCoreType == 2) {
+		} else if (GlobalSettings.browserCoreType == 2 || GlobalSettings.browserCoreType == 5|| GlobalSettings.browserCoreType == 6) {
 			augmentedDriver = new Augmenter().augment(be.getBrowserCore());
 		} else {
 			return "Incorrect browser type";
