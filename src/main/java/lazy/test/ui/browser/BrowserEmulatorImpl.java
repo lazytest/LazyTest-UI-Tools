@@ -197,7 +197,7 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         pause(pause);
         browserCore.quit();
         int type = GlobalSettings.browserCoreType;
-        if ( type== 2 || type == 5 || type == 6) {
+        if ( type== 2 ) {
             if(null != chromeServer) {
                 chromeServer.stop();
             }
