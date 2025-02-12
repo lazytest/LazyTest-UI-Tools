@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.test.skip>true</maven.test.skip>
     </properties>
-    
+    <!--
 	<distributionManagement>
 	        <repository>
 	            <id>releases</id>
@@ -25,6 +25,7 @@
 	            <url>http://10.13.8.9:8081/nexus/content/repositories/snapshots</url>
 	        </snapshotRepository>
 	    </distributionManagement>
+    -->
 	    
     <dependencies>
         <dependency>
@@ -78,7 +79,13 @@
         </dependency>
 
     </dependencies>
-
+    <distributionManagement>
+       <repository>
+         <id>github</id>
+         <name>GitHub OWNER Apache Maven Packages</name>
+         <url>https://maven.pkg.github.com/lazytest/LazyTest-UI-Tools</url>
+       </repository>
+    </distributionManagement>
     <build>
 
         <plugins>
