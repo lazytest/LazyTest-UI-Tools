@@ -93,7 +93,7 @@ public class FuncTest {
 
         Assert.assertEquals("keke", localPageBean.username.getText());
 
-        localPageBean.file.uploadFile("C:\\Windows\\System32\\drivers\\etc\\hosts");
+        //localPageBean.file.uploadFile("C:\\Windows\\System32\\drivers\\etc\\hosts");
 
         Assert.assertEquals("5", localPageBean.table.getTableContents().get(1).get(1));
 

@@ -1,7 +1,6 @@
 package lazy.test.ui.browser.imagecheck;
 
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
+
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
@@ -123,9 +122,12 @@ public class ImageContrast {
 		FileOutputStream out = null;
 		if (!isMatched) {
 			try {
-				out = new FileOutputStream(Settings.contrastImagePath + differenceImagePath + time + ".png");
-				JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
-				encoder.encode(difference);
+				String dstName = Settings.contrastImagePath + differenceImagePath + time + ".png";
+				String formatName = dstName.substring(dstName.lastIndexOf(".") + 1);
+//				out = new FileOutputStream(Settings.contrastImagePath + differenceImagePath + time + ".png");
+//				JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(out);
+//				encoder.encode(difference);
+				ImageIO.write(actual, /*"GIF"*/ formatName /* format desired */ , new File(dstName) /* target */ );
 			} catch (IOException e) {
 				e.printStackTrace();
 			} finally {

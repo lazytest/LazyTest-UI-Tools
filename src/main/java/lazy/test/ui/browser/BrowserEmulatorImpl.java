@@ -196,12 +196,12 @@ public class BrowserEmulatorImpl implements BrowserEmulator {
         //替换
         pause(pause);
         browserCore.quit();
-        int type = GlobalSettings.browserCoreType;
-        if ( type== 2 ) {
-            if(null != chromeServer) {
-                chromeServer.stop();
-            }
-        }
+//        int type = GlobalSettings.browserCoreType;
+//        if ( type== 2 ) {
+//            if(null != chromeServer) {
+//                chromeServer.stop();
+//            }
+//        }
         logger.info("Success to quit BrowserEmulator");
     }
 
